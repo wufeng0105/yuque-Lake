@@ -1,0 +1,312 @@
+<h1>敏捷开发管理文档：Scrum 实践指南</h1>
+<blockquote><strong>文档版本</strong>：v2.0.0
+<strong>文档状态</strong>：正式发布
+<strong>编写日期</strong>：2026-08-08
+<strong>编写人</strong>：项目管理部</blockquote>
+<card-hr/>
+<h2>一、Scrum 框架概述</h2>
+<h3>1.1 Scrum 定义</h3>
+<p>Scrum 是一种用于管理复杂产品开发的敏捷框架。它基于经验主义（经验过程控制），采用迭代增量的方式来优化可预测性和管理风险。</p>
+<h3>1.2 Scrum 三角色</h3>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>角色</td><td>职责</td><td>权限</td><td>日常工作</td></tr>
+<tr><td>产品负责人(Product Owner)</td><td>管理产品待办列表，确定优先级</td><td>决定做什么</td><td>维护Product Backlog、编写用户故事、参加评审会</td></tr>
+<tr><td>Scrum Master</td><td>确保Scrum被正确理解和实施</td><td>促进流程</td><td>清除障碍、组织会议、教练团队</td></tr>
+<tr><td>开发团队</td><td>自组织完成开发工作</td><td>决定怎么做</td><td>开发、测试、参加所有Scrum会议</td></tr>
+</tbody>
+</table>
+<h3>1.3 Scrum 事件</h3>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>事件</td><td>时长（2周Sprint）</td><td>目的</td><td>参与人</td></tr>
+<tr><td>Sprint</td><td>2周</td><td>迭代周期</td><td>全员</td></tr>
+<tr><td>Sprint计划会议</td><td>4小时</td><td>确定Sprint目标和待办项</td><td>全员</td></tr>
+<tr><td>每日Scrum</td><td>15分钟</td><td>同步进展、识别障碍</td><td>开发团队</td></tr>
+<tr><td>Sprint评审会议</td><td>2小时</td><td>展示成果、获取反馈</td><td>全员+利益相关者</td></tr>
+<tr><td>Sprint回顾会议</td><td>1.5小时</td><td>持续改进</td><td>全员</td></tr>
+</tbody>
+</table>
+<card-hr/>
+<h2>二、产品待办列表管理</h2>
+<h3>2.1 Product Backlog</h3>
+<p>产品待办列表是产品需求的唯一来源，由产品负责人维护。</p>
+<p><strong>Backlog 条目结构</strong>：</p>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>字段</td><td>类型</td><td>说明</td><td>示例</td></tr>
+<tr><td>ID</td><td>String</td><td>唯一标识</td><td>PB-001</td></tr>
+<tr><td>标题</td><td>String</td><td>简短描述</td><td>用户注册功能</td></tr>
+<tr><td>描述</td><td>Text</td><td>详细描述</td><td>作为用户，我希望...</td></tr>
+<tr><td>优先级</td><td>Enum</td><td>Must/Should/Could/Won't</td><td>Must</td></tr>
+<tr><td>故事点</td><td>Integer</td><td>相对估算（斐波那契数列）</td><td>8</td></tr>
+<tr><td>状态</td><td>Enum</td><td>待办/进行中/已完成</td><td>待办</td></tr>
+<tr><td>负责人</td><td>String</td><td>当前负责人</td><td>张三</td></tr>
+<tr><td>验收标准</td><td>List</td><td>验收条件</td><td>1.邮箱注册 2.手机注册 3.验证码校验</td></tr>
+</tbody>
+</table>
+<h3>2.2 用户故事格式</h3>
+<card-codeblock mode="plain">作为 [用户角色]，
+我希望 [完成某操作]，
+以便 [实现某价值]。
+
+验收标准：
+1. [条件1]
+2. [条件2]
+3. [条件3]</card-codeblock>
+<p><strong>示例</strong>：</p>
+<card-codeblock mode="plain">作为 新用户，
+我希望 通过手机号注册账号，
+以便 快速成为平台会员。
+
+验收标准：
+1. 输入手机号并获取短信验证码
+2. 验证码60秒内有效
+3. 设置密码（8-32位，含大小写字母和数字）
+4. 注册成功后自动登录
+5. 同一手机号不可重复注册</card-codeblock>
+<h3>2.3 故事点估算</h3>
+<p>使用斐波那契数列进行相对估算：</p>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>故事点</td><td>复杂度</td><td>说明</td><td>示例</td></tr>
+<tr><td>1</td><td>极简</td><td>几分钟完成</td><td>修改文案</td></tr>
+<tr><td>2</td><td>简单</td><td>1-2小时完成</td><td>添加字段</td></tr>
+<tr><td>3</td><td>一般</td><td>半天完成</td><td>简单CRUD页面</td></tr>
+<tr><td>5</td><td>中等</td><td>1天完成</td><td>带验证的表单</td></tr>
+<tr><td>8</td><td>较复杂</td><td>2-3天完成</td><td>支付流程</td></tr>
+<tr><td>13</td><td>复杂</td><td>3-5天完成</td><td>搜索+推荐</td></tr>
+<tr><td>21</td><td>非常复杂</td><td>1周+</td><td>完整模块</td></tr>
+</tbody>
+</table>
+<card-hr/>
+<h2>三、Sprint 管理</h2>
+<h3>3.1 Sprint 计划会议</h3>
+<p><strong>会议议程</strong>：</p>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>阶段</td><td>时长</td><td>内容</td><td>产出</td></tr>
+<tr><td>Part 1: What</td><td>1.5小时</td><td>PO讲解Backlog项，团队提问澄清</td><td>Sprint目标</td></tr>
+<tr><td>Part 2: How</td><td>2小时</td><td>团队讨论实现方案，分解任务</td><td>Sprint Backlog</td></tr>
+<tr><td>Break</td><td>15分钟</td><td>休息</td><td>—</td></tr>
+<tr><td>确认</td><td>15分钟</td><td>确认范围和承诺</td><td>团队承诺</td></tr>
+</tbody>
+</table>
+<p><strong>Sprint 目标示例</strong>：</p>
+<alert type="info">"本次Sprint的目标是完成用户注册登录模块和商品列表页面，使用户能够注册账号并浏览商品。"</alert>
+<h3>3.2 Sprint Backlog</h3>
+<table>
+<colgroup><col width="133"><col width="133"><col width="133"><col width="133"><col width="133"><col width="133"></colgroup>
+<tbody>
+<tr><td>任务ID</td><td>关联故事</td><td>任务描述</td><td>负责人</td><td>估算(小时)</td><td>状态</td></tr>
+<tr><td>T-001</td><td>PB-001</td><td>设计用户表结构</td><td>张三</td><td>4</td><td>已完成</td></tr>
+<tr><td>T-002</td><td>PB-001</td><td>实现注册API</td><td>李四</td><td>8</td><td>进行中</td></tr>
+<tr><td>T-003</td><td>PB-001</td><td>实现注册前端页面</td><td>王五</td><td>6</td><td>待办</td></tr>
+<tr><td>T-004</td><td>PB-001</td><td>编写注册单元测试</td><td>赵六</td><td>4</td><td>待办</td></tr>
+<tr><td>T-005</td><td>PB-001</td><td>注册功能联调测试</td><td>全员</td><td>4</td><td>待办</td></tr>
+</tbody>
+</table>
+<h3>3.3 每日 Scrum（站立会议）</h3>
+<p><strong>会议规则</strong>：</p>
+<ul>
+<li>每天同一时间、同一地点</li>
+<li>时长不超过15分钟</li>
+<li>全员站立参加</li>
+<li>只汇报不讨论</li>
+</ul>
+<p><strong>每人回答三个问题</strong>：</p>
+<ol>
+<li><strong>昨天我做了什么？</strong> — 完成的任务</li>
+<li><strong>今天我计划做什么？</strong> — 计划的任务</li>
+<li><strong>是否有阻碍？</strong> — 遇到的障碍</li>
+</ol>
+<h3>3.4 燃尽图（Burndown Chart）</h3>
+<p>燃尽图用于跟踪Sprint进展，显示剩余工作量随时间的变化。</p>
+<p><strong>理想燃尽线</strong>：从总故事点线性下降到0 <strong>实际燃尽线</strong>：每日更新剩余故事点</p>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>日期</td><td>理想剩余</td><td>实际剩余</td><td>说明</td></tr>
+<tr><td>Day 1</td><td>40</td><td>40</td><td>Sprint开始</td></tr>
+<tr><td>Day 2</td><td>36</td><td>38</td><td>进度略慢</td></tr>
+<tr><td>Day 3</td><td>32</td><td>33</td><td>接近理想</td></tr>
+<tr><td>Day 4</td><td>28</td><td>27</td><td>超前</td></tr>
+<tr><td>Day 5</td><td>24</td><td>25</td><td>正常</td></tr>
+<tr><td>Day 6</td><td>20</td><td>22</td><td>略慢</td></tr>
+<tr><td>Day 7</td><td>16</td><td>15</td><td>超前</td></tr>
+<tr><td>Day 8</td><td>12</td><td>12</td><td>正常</td></tr>
+<tr><td>Day 9</td><td>8</td><td>8</td><td>正常</td></tr>
+<tr><td>Day 10</td><td>0</td><td>2</td><td>接近完成</td></tr>
+</tbody>
+</table>
+<card-hr/>
+<h2>四、Sprint 评审与回顾</h2>
+<h3>4.1 Sprint 评审会议</h3>
+<p><strong>会议议程</strong>：</p>
+<table>
+<colgroup><col width="266"><col width="266"><col width="266"></colgroup>
+<tbody>
+<tr><td>环节</td><td>时长</td><td>内容</td></tr>
+<tr><td>开场</td><td>5分钟</td><td>Sprint目标回顾</td></tr>
+<tr><td>演示</td><td>60分钟</td><td>团队展示完成的增量</td></tr>
+<tr><td>反馈</td><td>30分钟</td><td>利益相关者反馈</td></tr>
+<tr><td>下一步</td><td>20分钟</td><td>讨论下个Sprint方向</td></tr>
+<tr><td>总结</td><td>5分钟</td><td>PO总结</td></tr>
+</tbody>
+</table>
+<p><strong>完成定义（Definition of Done）</strong>：</p>
+<table>
+<colgroup><col width="400"><col width="400"></colgroup>
+<tbody>
+<tr><td>检查项</td><td>要求</td></tr>
+<tr><td>代码编写</td><td>完成，符合编码规范</td></tr>
+<tr><td>单元测试</td><td>覆盖率≥85%，全部通过</td></tr>
+<tr><td>代码审查</td><td>至少1人审查通过</td></tr>
+<tr><td>集成测试</td><td>通过</td></tr>
+<tr><td>接口文档</td><td>已更新</td></tr>
+<tr><td>用户验收</td><td>PO验收通过</td></tr>
+<tr><td>部署</td><td>已部署到测试环境</td></tr>
+</tbody>
+</table>
+<h3>4.2 Sprint 回顾会议</h3>
+<p><strong>回顾会议议程</strong>：</p>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>环节</td><td>时长</td><td>方法</td><td>目的</td></tr>
+<tr><td>数据回顾</td><td>10分钟</td><td>展示Sprint数据</td><td>客观了解情况</td></tr>
+<tr><td>个人反思</td><td>10分钟</td><td>默写</td><td>每人写下感受</td></tr>
+<tr><td>团队分享</td><td>20分钟</td><td>轮流发言</td><td>分享观点</td></tr>
+<tr><td>聚焦讨论</td><td>25分钟</td><td>投票排序</td><td>选出改进项</td></tr>
+<tr><td>行动计划</td><td>15分钟</td><td>SMART目标</td><td>制定具体行动</td></tr>
+<tr><td>总结</td><td>10分钟</td><td>签字确认</td><td>达成共识</td></tr>
+</tbody>
+</table>
+<p><strong>回顾会议产出</strong>：</p>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>类别</td><td>内容</td><td>行动项</td><td>负责人</td></tr>
+<tr><td>做得好</td><td>每日Scrum准时参加</td><td>保持</td><td>全员</td></tr>
+<tr><td>做得好</td><td>代码审查质量高</td><td>保持</td><td>全员</td></tr>
+<tr><td>需改进</td><td>故事点估算偏差大</td><td>下Sprint使用规划扑克重新估算</td><td>SM</td></tr>
+<tr><td>需改进</td><td>测试环境不稳定</td><td>与运维沟通改善环境</td><td>SM</td></tr>
+<tr><td>行动项</td><td>引入自动化部署</td><td>调研CI/CD工具，下Sprint实施</td><td>张三</td></tr>
+</tbody>
+</table>
+<card-hr/>
+<h2>五、敏捷度量指标</h2>
+<h3>5.1 速度（Velocity）</h3>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>Sprint</td><td>承诺故事点</td><td>完成故事点</td><td>速度</td></tr>
+<tr><td>Sprint 1</td><td>35</td><td>28</td><td>28</td></tr>
+<tr><td>Sprint 2</td><td>32</td><td>30</td><td>30</td></tr>
+<tr><td>Sprint 3</td><td>34</td><td>33</td><td>33</td></tr>
+<tr><td>Sprint 4</td><td>36</td><td>35</td><td>35</td></tr>
+<tr><td>Sprint 5</td><td>38</td><td>37</td><td>37</td></tr>
+<tr><td>平均速度</td><td>—</td><td>—</td><td>32.6</td></tr>
+</tbody>
+</table>
+<h3>5.2 关键指标</h3>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>指标名称</td><td>计算方式</td><td>目标值</td><td>当前值</td></tr>
+<tr><td>速度</td><td>完成故事点/Sprint</td><td>稳定趋势</td><td>35</td></tr>
+<tr><td>速率稳定性</td><td>速度标准差/平均速度</td><td>< 15%</td><td>12%</td></tr>
+<tr><td>承诺达成率</td><td>完成故事点/承诺故事点</td><td>≥ 90%</td><td>92%</td></tr>
+<tr><td>缺陷逃逸率</td><td>生产缺陷/总缺陷</td><td>< 5%</td><td>3%</td></tr>
+<tr><td>Sprint中断率</td><td>中断故事点/总故事点</td><td>< 10%</td><td>8%</td></tr>
+</tbody>
+</table>
+<card-hr/>
+<h2>六、敏捷工具</h2>
+<h3>6.1 工具选型</h3>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>工具</td><td>用途</td><td>版本</td><td>说明</td></tr>
+<tr><td>Jira</td><td>Backlog管理、Sprint跟踪</td><td>Cloud</td><td>项目管理核心工具</td></tr>
+<tr><td>Confluence</td><td>文档协作</td><td>Cloud</td><td>知识库和文档</td></tr>
+<tr><td>Bitbucket/GitLab</td><td>代码管理</td><td>—</td><td>版本控制</td></tr>
+<tr><td>Jenkins/GitLab CI</td><td>CI/CD</td><td>—</td><td>持续集成</td></tr>
+<tr><td>Slack/钉钉</td><td>即时通讯</td><td>—</td><td>团队沟通</td></tr>
+</tbody>
+</table>
+<h3>6.2 Jira 工作流配置</h3>
+<table>
+<colgroup><col width="266"><col width="266"><col width="266"></colgroup>
+<tbody>
+<tr><td>状态</td><td>说明</td><td>流转条件</td></tr>
+<tr><td>To Do</td><td>待办</td><td>Sprint计划后进入</td></tr>
+<tr><td>In Progress</td><td>进行中</td><td>开发人员认领开始</td></tr>
+<tr><td>Code Review</td><td>代码审查</td><td>开发完成提交PR</td></tr>
+<tr><td>Testing</td><td>测试中</td><td>代码审查通过</td></tr>
+<tr><td>Done</td><td>已完成</td><td>测试通过+PO验收</td></tr>
+</tbody>
+</table>
+<card-hr/>
+<h2>七、团队规范</h2>
+<h3>7.1 编码规范</h3>
+<table>
+<colgroup><col width="266"><col width="266"><col width="266"></colgroup>
+<tbody>
+<tr><td>规范类型</td><td>要求</td><td>检查工具</td></tr>
+<tr><td>代码风格</td><td>遵循Google Java Style Guide</td><td>Checkstyle</td></tr>
+<tr><td>代码质量</td><td>SonarQube评级A</td><td>SonarQube</td></tr>
+<tr><td>命名规范</td><td>见名知意，遵循驼峰命名</td><td>Code Review</td></tr>
+<tr><td>注释规范</td><td>公共方法必须有JavaDoc</td><td>Checkstyle</td></tr>
+<tr><td>提交规范</td><td>遵循Conventional Commits</td><td>Commitlint</td></tr>
+</tbody>
+</table>
+<h3>7.2 分支管理策略</h3>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>分支</td><td>用途</td><td>命名规范</td><td>合并方式</td></tr>
+<tr><td>main</td><td>生产环境代码</td><td>main</td><td>—</td></tr>
+<tr><td>develop</td><td>开发主干</td><td>develop</td><td>—</td></tr>
+<tr><td>feature</td><td>功能开发</td><td>feature/PB-001-user-register</td><td>PR合并到develop</td></tr>
+<tr><td>hotfix</td><td>紧急修复</td><td>hotfix/issue-001-login-bug</td><td>PR合并到main和develop</td></tr>
+<tr><td>release</td><td>发布分支</td><td>release/v4.0.0</td><td>合并到main和develop</td></tr>
+</tbody>
+</table>
+<h3>7.3 持续集成</h3>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>阶段</td><td>触发条件</td><td>执行内容</td><td>时长</td></tr>
+<tr><td>编译</td><td>PR提交</td><td>Maven编译</td><td>2分钟</td></tr>
+<tr><td>单元测试</td><td>编译成功</td><td>运行所有单元测试</td><td>5分钟</td></tr>
+<tr><td>代码质量</td><td>单元测试通过</td><td>SonarQube扫描</td><td>3分钟</td></tr>
+<tr><td>镜像构建</td><td>代码质量通过</td><td>Docker镜像构建</td><td>3分钟</td></tr>
+<tr><td>部署测试</td><td>镜像构建成功</td><td>部署到测试环境</td><td>2分钟</td></tr>
+<tr><td>集成测试</td><td>部署成功</td><td>运行集成测试</td><td>10分钟</td></tr>
+</tbody>
+</table>
+<card-hr/>
+<h2>八、附录</h2>
+<h3>附录A：Scrum 术语表</h3>
+<table>
+<colgroup><col width="266"><col width="266"><col width="266"></colgroup>
+<tbody>
+<tr><td>术语</td><td>英文</td><td>定义</td></tr>
+<tr><td>产品待办列表</td><td>Product Backlog</td><td>产品需求的有序列表</td></tr>
+<tr><td>Sprint待办列表</td><td>Sprint Backlog</td><td>本次Sprint要完成的工作</td></tr>
+<tr><td>增量</td><td>Increment</td><td>Sprint结束时完成的产品功能</td></tr>
+<tr><td>完成定义</td><td>Definition of Done</td><td>判断工作是否完成的标准</td></tr>
+<tr><td>燃尽图</td><td>Burndown Chart</td><td>剩余工作量随时间的变化图</td></tr>
+<tr><td>速度</td><td>Velocity</td><td>团队每个Sprint完成的故事点</td></tr>
+<tr><td>故事点</td><td>Story Point</td><td>工作量的相对估算单位</td></tr>
+<tr><td>规划扑克</td><td>Planning Poker</td><td>团队估算故事点的方法</td></tr>
+</tbody>
+</table>
+<card-hr/>
+<p><em>本文档为敏捷开发管理文档，仅供项目团队内部使用。</em></p>

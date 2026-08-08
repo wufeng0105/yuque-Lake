@@ -1,0 +1,355 @@
+<h1>数据安全管理规范</h1>
+<blockquote><strong>文档版本</strong>：v2.0.0
+<strong>文档状态</strong>：正式发布
+<strong>编写日期</strong>：2026-08-08
+<strong>编写人</strong>：安全部</blockquote>
+<card-hr/>
+<h2>一、总则</h2>
+<h3>1.1 目的与适用范围</h3>
+<p>为规范数据安全管理行为，保障数据安全，维护组织合法权益，本规范适用于组织内部所有数据处理活动及相关人员。数据安全管理工作必须遵循合法合规、全面覆盖、动态调整的原则，确保数据全生命周期安全可控。</p>
+<h3>1.2 基本原则</h3>
+<table>
+<colgroup><col width="400"><col width="400"></colgroup>
+<tbody>
+<tr><td>原则</td><td>说明</td></tr>
+<tr><td>最小化授权</td><td>仅授予完成工作所需的最低权限</td></tr>
+<tr><td>分级分类管控</td><td>根据数据敏感程度实施差异化管控</td></tr>
+<tr><td>全程可追溯</td><td>所有数据操作留痕可查</td></tr>
+<tr><td>及时响应处置</td><td>安全事件快速响应和处置</td></tr>
+</tbody>
+</table>
+<h3>1.3 法律依据</h3>
+<ul>
+<li>《中华人民共和国数据安全法》</li>
+<li>《中华人民共和国网络安全法》</li>
+<li>《中华人民共和国个人信息保护法》</li>
+<li>《信息安全技术 个人信息安全规范》（GB/T 35273-2020）</li>
+</ul>
+<card-hr/>
+<h2>二、组织架构与职责</h2>
+<h3>2.1 权责划定</h3>
+<table>
+<colgroup><col width="266"><col width="266"><col width="266"></colgroup>
+<tbody>
+<tr><td>角色</td><td>职责</td><td>汇报关系</td></tr>
+<tr><td>单位主要负责人</td><td>第一责任人</td><td>—</td></tr>
+<tr><td>分管领导</td><td>直接管理责任</td><td>向主要负责人汇报</td></tr>
+<tr><td>数据安全工作部门</td><td>统筹协调职能</td><td>向分管领导汇报</td></tr>
+<tr><td>各业务部门</td><td>具体执行责任</td><td>向分管领导汇报</td></tr>
+</tbody>
+</table>
+<h3>2.2 部门职责</h3>
+<table>
+<colgroup><col width="400"><col width="400"></colgroup>
+<tbody>
+<tr><td>部门</td><td>安全职责</td></tr>
+<tr><td>信息技术部</td><td>数据安全技术保障，制定安全技术标准并监督实施</td></tr>
+<tr><td>人力资源部</td><td>数据安全相关岗位的绩效考核和培训管理</td></tr>
+<tr><td>财务部</td><td>保障数据安全工作经费</td></tr>
+<tr><td>法务部</td><td>数据安全合规审查和合同管理</td></tr>
+<tr><td>各业务部</td><td>对其产生的数据安全负主体责任</td></tr>
+</tbody>
+</table>
+<h3>2.3 岗位责任</h3>
+<table>
+<colgroup><col width="266"><col width="266"><col width="266"></colgroup>
+<tbody>
+<tr><td>岗位</td><td>职责</td><td>权限</td></tr>
+<tr><td>数据安全官(CDO)</td><td>制定和执行数据安全策略</td><td>全局安全策略管理</td></tr>
+<tr><td>数据安全工程师</td><td>技术实施（加密、脱敏、审计）</td><td>安全技术配置</td></tr>
+<tr><td>数据安全审计员</td><td>监督评估安全措施有效性</td><td>安全日志审查</td></tr>
+<tr><td>DBA</td><td>数据库安全管理</td><td>数据库配置和备份</td></tr>
+<tr><td>业务人员</td><td>日常操作合规</td><td>数据读写操作</td></tr>
+</tbody>
+</table>
+<card-hr/>
+<h2>三、数据分类分级管理</h2>
+<h3>3.1 分类标准</h3>
+<p>数据按照敏感性程度分为三类：</p>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>分类</td><td>定义</td><td>示例</td><td>防护级别</td></tr>
+<tr><td>核心数据</td><td>一旦泄露或被篡改可能造成重大损失</td><td>用户密码、支付密钥、核心算法</td><td>最高级防护</td></tr>
+<tr><td>重要数据</td><td>泄露或被篡改可能造成较大损失</td><td>用户手机号、身份证号、银行卡号、订单数据</td><td>次高级防护</td></tr>
+<tr><td>一般数据</td><td>泄露或被篡改造成损失较小</td><td>商品信息、公开公告、帮助文档</td><td>基础防护</td></tr>
+</tbody>
+</table>
+<h3>3.2 分级要求</h3>
+<table>
+<colgroup><col width="160"><col width="160"><col width="160"><col width="160"><col width="160"></colgroup>
+<tbody>
+<tr><td>数据级别</td><td>存储要求</td><td>传输要求</td><td>访问要求</td><td>审计要求</td></tr>
+<tr><td>核心数据</td><td>加密存储+专用设备</td><td>加密通道+数字签名</td><td>多因素认证+双人授权</td><td>实时监控</td></tr>
+<tr><td>重要数据</td><td>加密存储</td><td>加密通道</td><td>审批流程+操作日志</td><td>定期审计</td></tr>
+<tr><td>一般数据</td><td>访问日志</td><td>标准传输</td><td>身份认证</td><td>定期检查</td></tr>
+</tbody>
+</table>
+<h3>3.3 分级标识</h3>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>数据级别</td><td>标识方式</td><td>存储介质标识</td><td>展示界面标识</td></tr>
+<tr><td>核心</td><td>"核心"</td><td>红色标签</td><td>🔴核心</td></tr>
+<tr><td>重要</td><td>"重要"</td><td>橙色标签</td><td>🟠重要</td></tr>
+<tr><td>一般</td><td>"普通"</td><td>绿色标签</td><td>🟢普通</td></tr>
+</tbody>
+</table>
+<card-hr/>
+<h2>四、数据安全防护措施</h2>
+<h3>4.1 技术防护</h3>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>防护类型</td><td>核心数据</td><td>重要数据</td><td>一般数据</td></tr>
+<tr><td>存储加密</td><td>AES-256</td><td>AES-256</td><td>可选</td></tr>
+<tr><td>传输加密</td><td>TLS 1.3</td><td>TLS 1.2+</td><td>TLS 1.2+</td></tr>
+<tr><td>访问控制</td><td>RBAC+ABAC</td><td>RBAC</td><td>RBAC</td></tr>
+<tr><td>身份认证</td><td>多因素认证</td><td>双因素认证</td><td>单因素认证</td></tr>
+<tr><td>数据脱敏</td><td>完全脱敏</td><td>部分脱敏</td><td>按需</td></tr>
+<tr><td>操作审计</td><td>实时告警</td><td>日志记录</td><td>日志记录</td></tr>
+<tr><td>备份策略</td><td>实时异地备份</td><td>每日备份</td><td>每周备份</td></tr>
+</tbody>
+</table>
+<h3>4.2 物理防护</h3>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>防护项</td><td>核心数据</td><td>重要数据</td><td>一般数据</td></tr>
+<tr><td>机房位置</td><td>专用机房</td><td>标准机房</td><td>普通机房</td></tr>
+<tr><td>物理隔离</td><td>独立网络</td><td>VLAN隔离</td><td>共享网络</td></tr>
+<tr><td>环境监控</td><td>7×24小时</td><td>工作时间</td><td>定期巡检</td></tr>
+<tr><td>访问控制</td><td>生物识别+刷卡</td><td>刷卡+密码</td><td>刷卡</td></tr>
+</tbody>
+</table>
+<h3>4.3 管理防护</h3>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>防护项</td><td>核心数据</td><td>重要数据</td><td>一般数据</td></tr>
+<tr><td>岗位管理</td><td>双人双岗</td><td>定期轮换</td><td>定期检查</td></tr>
+<tr><td>操作管理</td><td>实时监控</td><td>定期审计</td><td>定期检查</td></tr>
+<tr><td>变更管理</td><td>部门负责人审批</td><td>数据安全部门审批</td><td>系统管理员审批</td></tr>
+</tbody>
+</table>
+<card-hr/>
+<h2>五、数据安全操作规范</h2>
+<h3>5.1 访问控制</h3>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>操作类型</td><td>核心数据</td><td>重要数据</td><td>一般数据</td></tr>
+<tr><td>读取</td><td>多因素认证+双人授权</td><td>审批流程+身份认证</td><td>身份认证</td></tr>
+<tr><td>修改</td><td>多因素认证+双人授权+审批</td><td>审批流程</td><td>系统管理员</td></tr>
+<tr><td>删除</td><td>多因素认证+三人授权+审批</td><td>双人审批</td><td>系统管理员</td></tr>
+<tr><td>导出</td><td>禁止导出</td><td>审批+脱敏导出</td><td>审批后导出</td></tr>
+<tr><td>传输</td><td>加密通道+数字签名</td><td>加密通道</td><td>标准传输</td></tr>
+</tbody>
+</table>
+<h3>5.2 操作管理</h3>
+<p>所有数据操作必须记录以下信息：</p>
+<table>
+<colgroup><col width="266"><col width="266"><col width="266"></colgroup>
+<tbody>
+<tr><td>记录字段</td><td>说明</td><td>保留时间</td></tr>
+<tr><td>操作人</td><td>用户ID和姓名</td><td>180天</td></tr>
+<tr><td>操作时间</td><td>精确到毫秒</td><td>180天</td></tr>
+<tr><td>操作类型</td><td>读取/修改/删除/导出</td><td>180天</td></tr>
+<tr><td>操作对象</td><td>数据表/记录ID</td><td>180天</td></tr>
+<tr><td>操作内容</td><td>变更前后值</td><td>180天</td></tr>
+<tr><td>操作结果</td><td>成功/失败</td><td>180天</td></tr>
+<tr><td>操作IP</td><td>来源IP地址</td><td>180天</td></tr>
+</tbody>
+</table>
+<h3>5.3 变更管理</h3>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>变更类型</td><td>审批层级</td><td>操作要求</td><td>回滚要求</td></tr>
+<tr><td>核心数据变更</td><td>部门负责人+数据安全官</td><td>双人执行+实时监控</td><td>2小时内回滚</td></tr>
+<tr><td>重要数据变更</td><td>数据安全部门</td><td>审批后执行</td><td>4小时内回滚</td></tr>
+<tr><td>一般数据变更</td><td>系统管理员</td><td>记录操作日志</td><td>24小时内回滚</td></tr>
+<tr><td>数据结构变更</td><td>架构委员会评审</td><td>灰度发布+验证</td><td>保留旧版本</td></tr>
+</tbody>
+</table>
+<card-hr/>
+<h2>六、数据全生命周期安全</h2>
+<h3>6.1 数据采集</h3>
+<table>
+<colgroup><col width="266"><col width="266"><col width="266"></colgroup>
+<tbody>
+<tr><td>阶段</td><td>安全要求</td><td>控制措施</td></tr>
+<tr><td>数据采集</td><td>合法合规、最小必要</td><td>用户知情同意、数据采集范围审批</td></tr>
+<tr><td>数据分类</td><td>按敏感度分类</td><td>自动分类标签</td></tr>
+<tr><td>数据质量</td><td>完整性校验</td><td>数据校验规则</td></tr>
+</tbody>
+</table>
+<h3>6.2 数据传输</h3>
+<table>
+<colgroup><col width="266"><col width="266"><col width="266"></colgroup>
+<tbody>
+<tr><td>传输场景</td><td>安全要求</td><td>技术措施</td></tr>
+<tr><td>客户端→服务端</td><td>加密传输</td><td>HTTPS/TLS 1.2+</td></tr>
+<tr><td>服务间传输</td><td>加密+认证</td><td>mTLS双向认证</td></tr>
+<tr><td>跨网段传输</td><td>加密+审批</td><td>VPN+审批流程</td></tr>
+<tr><td>文件传输</td><td>加密+审计</td><td>SFTP+操作日志</td></tr>
+</tbody>
+</table>
+<h3>6.3 数据存储</h3>
+<table>
+<colgroup><col width="266"><col width="266"><col width="266"></colgroup>
+<tbody>
+<tr><td>存储类型</td><td>安全要求</td><td>技术措施</td></tr>
+<tr><td>数据库存储</td><td>加密+访问控制</td><td>TDE透明数据加密</td></tr>
+<tr><td>文件存储</td><td>加密+备份</td><td>对象存储服务端加密</td></tr>
+<tr><td>日志存储</td><td>脱敏+保留策略</td><td>日志脱敏+自动清理</td></tr>
+<tr><td>备份存储</td><td>加密+异地</td><td>加密备份+异地灾备</td></tr>
+</tbody>
+</table>
+<h3>6.4 数据使用</h3>
+<table>
+<colgroup><col width="266"><col width="266"><col width="266"></colgroup>
+<tbody>
+<tr><td>使用场景</td><td>安全要求</td><td>技术措施</td></tr>
+<tr><td>数据展示</td><td>敏感数据脱敏</td><td>中间位掩码（如138****8000）</td></tr>
+<tr><td>数据分析</td><td>脱敏+匿名化</td><td>差分隐私、k-匿名</td></tr>
+<tr><td>数据共享</td><td>审批+脱敏</td><td>数据共享审批流程</td></tr>
+<tr><td>数据导出</td><td>审批+水印</td><td>导出审批+数字水印</td></tr>
+</tbody>
+</table>
+<h3>6.5 数据销毁</h3>
+<table>
+<colgroup><col width="266"><col width="266"><col width="266"></colgroup>
+<tbody>
+<tr><td>销毁类型</td><td>方法</td><td>验证方式</td></tr>
+<tr><td>逻辑删除</td><td>标记删除标志</td><td>数据库查询验证</td></tr>
+<tr><td>物理删除</td><td>安全擦除（DoD 5220.22-M）</td><td>磁盘扫描验证</td></tr>
+<tr><td>介质销毁</td><td>物理粉碎/消磁</td><td>销毁记录+视频记录</td></tr>
+</tbody>
+</table>
+<card-hr/>
+<h2>七、数据安全应急处置</h2>
+<h3>7.1 应急响应</h3>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>事件级别</td><td>响应时效</td><td>启动条件</td><td>指挥人</td></tr>
+<tr><td>一级</td><td>30分钟内</td><td>核心数据泄露/篡改</td><td>单位主要负责人</td></tr>
+<tr><td>二级</td><td>1小时内</td><td>重要数据泄露/篡改</td><td>数据安全官</td></tr>
+<tr><td>三级</td><td>4小时内</td><td>一般数据泄露/篡改</td><td>数据安全部门</td></tr>
+<tr><td>四级</td><td>24小时内</td><td>潜在安全风险</td><td>值班安全工程师</td></tr>
+</tbody>
+</table>
+<h3>7.2 处置流程</h3>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>步骤</td><td>操作</td><td>时效要求</td><td>负责人</td></tr>
+<tr><td>1.事件发现</td><td>监控告警/用户报告/审计发现</td><td>即时</td><td>值班人员</td></tr>
+<tr><td>2.初步评估</td><td>判断事件级别和影响范围</td><td>15分钟</td><td>安全工程师</td></tr>
+<tr><td>3.启动响应</td><td>按级别启动应急响应</td><td>30分钟</td><td>数据安全官</td></tr>
+<tr><td>4.控制措施</td><td>隔离受影响系统/封锁账号</td><td>即时</td><td>运维工程师</td></tr>
+<tr><td>5.根因分析</td><td>分析泄露途径和原因</td><td>4小时</td><td>安全工程师</td></tr>
+<tr><td>6.数据恢复</td><td>从备份恢复数据</td><td>2小时（核心）/4小时（重要）</td><td>DBA</td></tr>
+<tr><td>7.事后复盘</td><td>分析原因、制定改进措施</td><td>48小时</td><td>全员</td></tr>
+<tr><td>8.报告归档</td><td>编写事件报告并归档</td><td>72小时</td><td>数据安全官</td></tr>
+</tbody>
+</table>
+<h3>7.3 恢复措施</h3>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>数据级别</td><td>恢复时效</td><td>恢复方式</td><td>验证要求</td></tr>
+<tr><td>核心数据</td><td>2小时</td><td>实时备份恢复</td><td>数据完整性校验</td></tr>
+<tr><td>重要数据</td><td>4小时</td><td>日备份恢复</td><td>数据一致性校验</td></tr>
+<tr><td>一般数据</td><td>24小时</td><td>周备份恢复</td><td>基本功能验证</td></tr>
+</tbody>
+</table>
+<card-hr/>
+<h2>八、数据安全审计</h2>
+<h3>8.1 审计频率</h3>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>审计类型</td><td>频率</td><td>审计内容</td><td>审计人</td></tr>
+<tr><td>日常审计</td><td>每日</td><td>操作日志、告警事件</td><td>安全工程师</td></tr>
+<tr><td>定期审计</td><td>每月</td><td>权限 review、数据访问统计</td><td>数据安全官</td></tr>
+<tr><td>专项审计</td><td>每季度</td><td>安全措施有效性评估</td><td>外部审计</td></tr>
+<tr><td>年度审计</td><td>每年</td><td>全面安全评估</td><td>第三方机构</td></tr>
+</tbody>
+</table>
+<h3>8.2 审计内容</h3>
+<table>
+<colgroup><col width="266"><col width="266"><col width="266"></colgroup>
+<tbody>
+<tr><td>审计项</td><td>审计内容</td><td>通过标准</td></tr>
+<tr><td>权限审计</td><td>检查用户权限是否合理</td><td>无越权、无冗余权限</td></tr>
+<tr><td>操作审计</td><td>检查数据操作是否合规</td><td>无违规操作</td></tr>
+<tr><td>访问审计</td><td>检查数据访问是否异常</td><td>无异常访问模式</td></tr>
+<tr><td>配置审计</td><td>检查安全配置是否正确</td><td>所有配置符合规范</td></tr>
+<tr><td>漏洞审计</td><td>检查系统是否存在漏洞</td><td>无高危漏洞</td></tr>
+</tbody>
+</table>
+<card-hr/>
+<h2>九、培训与考核</h2>
+<h3>9.1 培训计划</h3>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>培训对象</td><td>培训内容</td><td>频率</td><td>考核方式</td></tr>
+<tr><td>全体员工</td><td>数据安全意识教育</td><td>入职时+每年</td><td>在线考试</td></tr>
+<tr><td>开发人员</td><td>安全编码规范</td><td>每季度</td><td>代码审查</td></tr>
+<tr><td>运维人员</td><td>安全运维操作</td><td>每季度</td><td>实操考核</td></tr>
+<tr><td>安全人员</td><td>安全技术前沿</td><td>每月</td><td>内部分享</td></tr>
+<tr><td>管理人员</td><td>数据安全法规</td><td>每半年</td><td>案例分析</td></tr>
+</tbody>
+</table>
+<h3>9.2 考核机制</h3>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>考核项</td><td>权重</td><td>评分标准</td><td>奖惩</td></tr>
+<tr><td>安全考试通过率</td><td>30%</td><td>≥ 90分通过</td><td>不通过需重训</td></tr>
+<tr><td>安全事件数量</td><td>30%</td><td>0次为满分</td><td>发生事件扣分</td></tr>
+<tr><td>安全检查结果</td><td>20%</td><td>无违规项</td><td>违规扣分</td></tr>
+<tr><td>培训参与率</td><td>10%</td><td>≥ 95%</td><td>不达标扣分</td></tr>
+<tr><td>安全改进贡献</td><td>10%</td><td>主动发现和报告</td><td>额外加分</td></tr>
+</tbody>
+</table>
+<card-hr/>
+<h2>十、附录</h2>
+<h3>附录A：数据安全检查清单</h3>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>检查项</td><td>检查内容</td><td>检查频率</td><td>负责人</td></tr>
+<tr><td>数据加密</td><td>核心和重要数据是否加密存储</td><td>每月</td><td>安全工程师</td></tr>
+<tr><td>访问控制</td><td>权限是否最小化</td><td>每月</td><td>数据安全官</td></tr>
+<tr><td>操作审计</td><td>操作日志是否完整</td><td>每日</td><td>安全工程师</td></tr>
+<tr><td>备份恢复</td><td>备份是否可用</td><td>每季度</td><td>DBA</td></tr>
+<tr><td>漏洞扫描</td><td>系统是否存在漏洞</td><td>每月</td><td>安全工程师</td></tr>
+<tr><td>应急演练</td><td>应急预案是否有效</td><td>每半年</td><td>数据安全官</td></tr>
+<tr><td>培训完成</td><td>员工是否完成培训</td><td>每季度</td><td>人力资源部</td></tr>
+</tbody>
+</table>
+<h3>附录B：数据安全事件报告模板</h3>
+<table>
+<colgroup><col width="400"><col width="400"></colgroup>
+<tbody>
+<tr><td>字段</td><td>说明</td></tr>
+<tr><td>事件ID</td><td>唯一标识</td></tr>
+<tr><td>事件时间</td><td>发现时间和发生时间</td></tr>
+<tr><td>事件级别</td><td>一/二/三/四级</td></tr>
+<tr><td>事件类型</td><td>泄露/篡改/丢失/未授权访问</td></tr>
+<tr><td>影响范围</td><td>受影响的数据类型和数量</td></tr>
+<tr><td>影响用户</td><td>受影响的用户数量</td></tr>
+<tr><td>发现方式</td><td>监控告警/用户报告/审计发现</td></tr>
+<tr><td>根因分析</td><td>事件根本原因</td></tr>
+<tr><td>处置措施</td><td>已采取的措施</td></tr>
+<tr><td>恢复状态</td><td>已恢复/恢复中/未恢复</td></tr>
+<tr><td>改进措施</td><td>防止再次发生的措施</td></tr>
+<tr><td>责任人</td><td>事件责任人和处理人</td></tr>
+</tbody>
+</table>
+<card-hr/>
+<p><em>本文档为数据安全管理规范，所有员工必须遵守。</em></p>

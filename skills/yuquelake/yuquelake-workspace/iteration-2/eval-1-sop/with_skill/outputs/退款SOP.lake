@@ -1,0 +1,112 @@
+<!doctype lake><title>退款操作 SOP</title><meta name="doc-version" content="1" /><meta name="viewport" content="fixed" /><meta name="typography" content="classic" /><meta name="paragraphSpacing" content="relax" /><h1>退款操作 SOP</h1>
+
+<blockquote class="lake-alert lake-alert-info">
+常规规则是，尽可能解决用户的问题，留住用户，不走退款。可以引导用户转按量，永久有效，什么时候想用都可以用。实在解决不了的或者用户闹事的，再沟通退款。
+</blockquote>
+
+<h2>退款规则</h2>
+<table>
+<colgroup><col width="250"><col width="250"></colgroup>
+<tbody>
+<tr><td>有效期 ≥ 14天</td><td>支持按剩余价值退款</td></tr>
+<tr><td>有效期 &lt; 14天</td><td>支持折半转成按量付费额度</td></tr>
+<tr><td>手续费</td><td>统一收 20%，超过 100 元按 100 元计</td></tr>
+</tbody>
+</table>
+
+<h2>操作步骤</h2>
+
+<details class="lake-collapse" open="false"><summary class="lake-summary">步骤 1：询问退款原因</summary>
+<p>话术：<code>您是什么原因要退款呢？</code></p>
+<blockquote class="lake-alert lake-alert-warning">
+如果是用户使用问题，先发群里确认是否可以帮用户解决；订阅的可以引导用户按照 50% 规则转按量；按量永久有效，暂时不用可以先留着。退款原因要记录到周报。
+</blockquote>
+</details>
+
+<details class="lake-collapse" open="false"><summary class="lake-summary">步骤 2：提交退款材料</summary>
+<p>确认用户退款后，发送话术给用户：</p>
+<card type="inline" name="codeblock" value="data:%7B%22search%22%3A%22%22%2C%22hideToolbar%22%3Atrue%2C%22mode%22%3A%22plain%22%2C%22code%22%3A%22%5Cn1.%20%E7%BD%91%E7%AB%99%E6%B3%A8%E5%86%8C%E8%B4%A6%E5%8F%B7%5Cn2.%20%E8%AE%A2%E9%98%85%E7%9A%84%E4%BB%98%E6%AC%BE%E6%88%AA%E5%9B%BE%EF%BC%88%E9%9C%80%E8%A6%81%E8%83%BD%E7%9C%8B%E5%88%B0%E6%97%A5%E6%9C%9F%EF%BC%89%5Cn3.%20%E4%BB%AA%E8%A1%A8%E7%9B%98%E6%88%AA%E5%9B%BE%EF%BC%9Ahttps%3A%2F%2Fwww.aicodemirror.com%2Fdashboard%5Cn4.%20%E9%82%80%E8%AF%B7%E8%BF%94%E5%88%A9%E6%88%AA%E5%9B%BE%EF%BC%9Ahttps%3A%2F%2Fwww.aicodemirror.com%2Fdashboard%2Finvite-rewards%5Cn5.%20%E6%82%A8%E7%9A%84%E5%BC%80%E7%A5%A8%E6%8A%AC%E5%A4%B4%E6%88%96%E8%80%85%E9%82%AE%E7%AE%B1%5Cn%22%2C%22heightLimit%22%3Atrue%2C%22id%22%3A%22oanjG%22%7D"></card>
+<p>话术：我们将根据您的用量情况，核算退款金额，请您稍等。退款后会注销账号请您知悉。账号注销后将永久冻结，不能再注册使用。</p>
+</details>
+
+<details class="lake-collapse" open="false"><summary class="lake-summary">步骤 3：核算退款金额</summary>
+<p>多选聊天记录，转发大群，简要说明退款原因，请杰哥确认。确认后核算退款金额。</p>
+<p><strong>退款计算方式：</strong></p>
+<card type="inline" name="codeblock" value="data:%7B%22search%22%3A%22%22%2C%22hideToolbar%22%3Atrue%2C%22mode%22%3A%22plain%22%2C%22code%22%3A%22%5Cn%28%E4%BD%99%E9%A2%9D%20-%20%E9%82%80%E8%AF%B7%E8%BF%94%E5%88%A9%29%20%C3%97%20%E5%85%85%E5%80%BC%E6%8A%98%E6%89%A3%20-%20%E6%94%AF%E4%BB%98%E9%87%91%E9%A2%9D%C3%970.6%25%E6%89%8B%E7%BB%AD%E8%B4%B9%20-%20%E5%85%85%E5%80%BC%E9%87%91%E9%A2%9D%C3%9720%25%E6%89%8B%E7%BB%AD%E8%B4%B9%EF%BC%88%E5%B0%81%E9%A1%B6100%EF%BC%89%3D%20%E5%BA%94%E9%80%80%E9%87%91%E9%A2%9D%5Cn%22%2C%22heightLimit%22%3Atrue%2C%22id%22%3A%22oeUFh%22%7D"></card>
+<p><strong>邀请返利扣除规则：</strong></p>
+<ol>
+<li>扣除邀请人的邀请奖励积分（邀请奖励账户余额）→ 扣除邀请人的奖励积分（按量付费余额）→ 扣除被邀请人的</li>
+<li>如果要扣被邀请人的，退款金额在 100 以内不要扣</li>
+<li>如果用户反应大，就不扣</li>
+</ol>
+<p>如果需要扣除该用户的，按照充值金额×20%扣除，最高扣除 100。如果用户本身有邀请返利也需要扣除（计算转入钱包的金额，如果没有转入则不计算）。</p>
+<p><strong>示例：</strong></p>
+<card type="inline" name="codeblock" value="data:%7B%22search%22%3A%22%22%2C%22hideToolbar%22%3Atrue%2C%22mode%22%3A%22plain%22%2C%22code%22%3A%22%5Cn%E7%94%A8%E6%88%B7%20ultra%20%E4%BD%99%E9%A2%9D%E4%B8%BA%201000%EF%BC%8C%E5%8F%82%E4%B8%8E%E9%82%80%E8%AF%B7%E8%BF%94%E5%88%A9%5Cn%E9%80%80%E6%AC%BE%E9%87%91%E9%A2%9D%20%3D%20%281000%20-%20%E9%82%80%E8%AF%B7%E8%BF%94%E5%88%A9%29%20%C3%97%200.75%20-%20%E6%94%AF%E4%BB%98%E6%89%8B%E7%BB%AD%E8%B4%B9%5Cn%20%20%20%20%20%20%20%20%3D%20750%20-%201259%20%C3%97%200.2%5Cn%20%20%20%20%20%20%20%20%3D%20498.2%5Cn%22%2C%22heightLimit%22%3Atrue%2C%22id%22%3A%220DLlq%22%7D"></card>
+<blockquote class="lake-alert lake-alert-warning">邀请返利有就扣除，没有则不扣除。</blockquote>
+</details>
+
+<details class="lake-collapse" open="false"><summary class="lake-summary">步骤 4：检查作废发票</summary>
+<p>检查用户是否有发票需要作废。作废后，按照实际使用金额重新登记开票。</p>
+<p>话术：<code>您好，麻烦您告诉我下您的开票信息：抬头，收发票的邮箱哈</code></p>
+<blockquote class="lake-alert lake-alert-warning">不要直接问是否开过发票。拿到开票信息后查询系统开票情况，再告知用户会作废并根据退款情况重新开具。</blockquote>
+</details>
+
+<details class="lake-collapse" open="false"><summary class="lake-summary">步骤 5：登记周报退款</summary>
+<p>登记退款记录到周报。</p>
+<card type="inline" name="image" value="data:%7B%22src%22%3A%22https%3A%2F%2Fcdn.nlark.com%2Fyuque%2F0%2F2026%2Fpng%2F523194%2F1770882309717-ab48e366-7ea9-44af-a94e-ee7ecb5e4b2d.png%22%2C%22linkTarget%22%3A%22%22%2C%22title%22%3A%22%E5%91%A8%E6%8A%A5%E7%99%BB%E8%AE%B0%E7%A4%BA%E4%BE%8B%22%2C%22crop%22%3A%5B0%2C0%2C1%2C1%5D%2C%22id%22%3A%22QJ0Ui%22%7D"></card>
+<p>用户确认后，请用户添加阿飞企业微信退款。</p>
+<p>话术：<code>确认金额无误后请加企业微信，为您返款。</code></p>
+<card type="inline" name="image" value="data:%7B%22src%22%3A%22https%3A%2F%2Fcdn.nlark.com%2Fyuque%2F0%2F2026%2Fjpeg%2F523194%2F1778909325863-afeed556-fc02-4d18-97d4-eb1fbc6b7d6e.jpeg%22%2C%22linkTarget%22%3A%22%22%2C%22title%22%3A%22%E4%BC%81%E4%B8%9A%E5%BE%AE%E4%BF%A1%E6%B7%BB%E5%8A%A0%E7%A4%BA%E4%BE%8B%22%2C%22crop%22%3A%5B0%2C0%2C1%2C1%5D%2C%22id%22%3A%22fUKcI%22%7D"></card>
+</details>
+
+<details class="lake-collapse" open="false"><summary class="lake-summary">步骤 6：提交阿滨打款</summary>
+<p>请用户提交注册手机号，检查周报，确认退款金额，给用户打款。打款完毕后更新周报记录。</p>
+<card type="inline" name="image" value="data:%7B%22src%22%3A%22https%3A%2F%2Fcdn.nlark.com%2Fyuque%2F0%2F2026%2Fpng%2F523194%2F1770882325630-917f2452-3f1b-4d6b-b5f3-35aa6616df02.png%22%2C%22linkTarget%22%3A%22%22%2C%22title%22%3A%22%E6%89%93%E6%AC%BE%E8%AE%B0%E5%BD%95%E7%A4%BA%E4%BE%8B%22%2C%22crop%22%3A%5B0%2C0%2C1%2C1%5D%2C%22id%22%3A%22ZnOmo%22%7D"></card>
+</details>
+
+<details class="lake-collapse" open="false"><summary class="lake-summary">步骤 7：退款完毕，提交阿飞注销账号</summary>
+<p>客服 88888 群，提交注销账号。</p>
+<p>话术：<code>15810032255 退款完毕，请注销账号。</code></p>
+<card type="inline" name="image" value="data:%7B%22src%22%3A%22https%3A%2F%2Fcdn.nlark.com%2Fyuque%2F0%2F2026%2Fpng%2F523194%2F1770882388716-30a6a65e-9936-47d3-9354-ed2f49ef745b.png%22%2C%22linkTarget%22%3A%22%22%2C%22title%22%3A%22%E6%B3%A8%E9%94%80%E6%8F%90%E6%89%A2%E5%8D%95%E7%A4%BA%E4%BE%8B%22%2C%22crop%22%3A%5B0%2C0%2C1%2C1%5D%2C%22id%22%3A%22TZiHn%22%7D"></card>
+<p><strong>注销账号操作：</strong></p>
+<p>打开 <a href="https://admin.aicodemirror.com/anthropic/management" target="_blank">管理后台</a></p>
+<ol>
+<li>登录管理后台，【用户管理】页面输入用户手机号</li>
+<li>冻结账号：查询到用户后，先冻结账号</li>
+<li>删除账号：选择删除账号，并在弹出提示确定</li>
+<li>重新输入用户手机号，查询确认（没有找到匹配的用户），注销成功</li>
+</ol>
+<card type="inline" name="image" value="data:%7B%22src%22%3A%22https%3A%2F%2Fcdn.nlark.com%2Fyuque%2F0%2F2026%2Fpng%2F523194%2F1778909459116-e9497ff6-42d4-4d40-98ed-383371349a72.png%22%2C%22linkTarget%22%3A%22%22%2C%22title%22%3A%22Step1%20%E7%99%BB%E5%BD%95%E7%AE%A1%E7%90%86%E5%90%8E%E5%8F%B0%22%2C%22crop%22%3A%5B0%2C0%2C1%2C1%5D%2C%22id%22%3A%22eYbTP%22%7D"></card>
+<card type="inline" name="image" value="data:%7B%22src%22%3A%22https%3A%2F%2Fcdn.nlark.com%2Fyuque%2F0%2F2026%2Fpng%2F523194%2F1778909498739-c9451741-87f8-4f4a-834b-02cceefe7425.png%22%2C%22linkTarget%22%3A%22%22%2C%22title%22%3A%22Step2%20%E5%86%BB%E7%BB%93%E8%B4%A6%E5%8F%B7%22%2C%22crop%22%3A%5B0%2C0%2C1%2C1%5D%2C%22id%22%3A%22SG5By%22%7D"></card>
+<card type="inline" name="image" value="data:%7B%22src%22%3A%22https%3A%2F%2Fcdn.nlark.com%2Fyuque%2F0%2F2026%2Fpng%2F523194%2F1778909521534-c20ce23f-44b6-4f91-b845-ad3152776d93.png%22%2C%22linkTarget%22%3A%22%22%2C%22title%22%3A%22Step3%20%E5%88%A0%E9%99%A4%E8%B4%A6%E5%8F%B7%22%2C%22crop%22%3A%5B0%2C0%2C1%2C1%5D%2C%22id%22%3A%22YjXCR%22%7D"></card>
+<card type="inline" name="image" value="data:%7B%22src%22%3A%22https%3A%2F%2Fcdn.nlark.com%2Fyuque%2F0%2F2026%2Fpng%2F523194%2F1778909542132-cd6bf073-13cc-4f23-b200-6a8d4a56f141.png%22%2C%22linkTarget%22%3A%22%22%2C%22title%22%3A%22Step4%20%E7%A1%AE%E8%AE%A4%E6%B3%A8%E9%94%80%E6%88%90%E5%8A%9F%22%2C%22crop%22%3A%5B0%2C0%2C1%2C1%5D%2C%22id%22%3A%224GkfH%22%7D"></card>
+</details>
+
+<details class="lake-collapse" open="false"><summary class="lake-summary">步骤 8：汇总退款金额，找张总报销</summary>
+<p>按照周或者累计金额，核算总退款金额，找张总报销。</p>
+</details>
+
+<details class="lake-collapse" open="false"><summary class="lake-summary">步骤 9：按周分析优化</summary>
+<ol>
+<li>分析本周退款条数和原因，复盘沟通过程</li>
+<li>明确用户退款根本原因和诉求，寻求对应优化方案，降低后续该原因退款</li>
+</ol>
+</details>
+
+<card type="block" name="hr" value="data:%7B%22id%22%3A%22iqm0v%22%7D"></card>
+
+<h2>Check List</h2>
+<ol>
+<li><card type="inline" name="checkbox" value="data:false"></card> 确认退款金额计算无误</li>
+<li><card type="inline" name="checkbox" value="data:false"></card> 确认已登记的发票作废完成</li>
+<li><card type="inline" name="checkbox" value="data:false"></card> 确认账号注销</li>
+</ol>
+
+<h2>修订记录</h2>
+<table>
+<colgroup><col width="100"><col width="150"><col width="400"></colgroup>
+<tbody>
+<tr><td>版本</td><td>日期</td><td>变更说明</td></tr>
+<tr><td>1.0</td><td>2026-05-07</td><td>初始版本</td></tr>
+</tbody>
+</table>

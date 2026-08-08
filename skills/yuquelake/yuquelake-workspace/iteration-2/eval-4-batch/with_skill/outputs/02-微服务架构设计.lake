@@ -1,0 +1,297 @@
+<!doctype lake><title>02-微服务架构设计</title><meta name="doc-version" content="1" /><meta name="viewport" content="fixed" /><meta name="typography" content="classic" /><meta name="paragraphSpacing" content="relax" /><h1>微服务架构设计说明书：电商平台 v4.0</h1>
+<blockquote><strong>文档版本</strong>：v4.0.0
+<strong>文档状态</strong>：已评审
+<strong>编写日期</strong>：2026-08-08
+<strong>编写人</strong>：架构组</blockquote>
+<card type="block" name="hr" value="data:%7B%22id%22%3A%22zV8jt%22%7D"></card>
+<h2>一、总则</h2>
+<h3>1.1 适用范围</h3>
+<p>本标准规范适用于公司所有采用微服务架构的新建及改造项目，明确了服务拆分的原则、流程、标准及验收要求，旨在提升系统可维护性、可扩展性及开发效率。</p>
+<h3>1.2 基本原则</h3>
+<p>服务拆分应遵循以下核心原则：</p>
+<table>
+<colgroup><col width="400"><col width="400"></colgroup>
+<tbody>
+<tr><td>原则</td><td>说明</td></tr>
+<tr><td>业务领域驱动</td><td>以业务能力边界为依据进行服务划分，确保每个服务聚焦单一业务职责</td></tr>
+<tr><td>高内聚低耦合</td><td>服务内部功能模块应高度聚合，服务间依赖关系需最小化</td></tr>
+<tr><td>独立部署与演进</td><td>每个微服务应具备独立部署能力，支持版本兼容性管理</td></tr>
+<tr><td>数据一致性保障</td><td>明确服务边界内的数据归属，采用最终一致性或强一致性方案</td></tr>
+<tr><td>性能与容量评估</td><td>拆分前需评估服务调用链性能瓶颈，预留扩展余量</td></tr>
+<tr><td>监控与日志规范</td><td>服务间交互需标准化日志格式，部署集中监控告警系统</td></tr>
+</tbody>
+</table>
+<h3>1.3 管理职责</h3>
+<p>技术管理部负责本标准的制定、修订与监督执行，各业务部门及研发团队负责具体的服务拆分实施工作。</p>
+<card type="block" name="hr" value="data:%7B%22id%22%3A%22caXhy%22%7D"></card>
+<h2>二、系统整体架构</h2>
+<h3>2.1 架构总览</h3>
+<p>系统采用分层微服务架构，从上到下分为：</p>
+<ol>
+<li><strong>接入层</strong>：Nginx 负载均衡 + API Gateway（Spring Cloud Gateway）</li>
+<li><strong>应用层</strong>：各业务微服务（用户服务、商品服务、订单服务、支付服务、库存服务、搜索服务、推荐服务、营销服务）</li>
+<li><strong>中间件层</strong>：消息队列（Kafka）、缓存（Redis Cluster）、搜索引擎（Elasticsearch）</li>
+<li><strong>数据层</strong>：MySQL（主从）、MongoDB、TiDB（分析型）</li>
+<li><strong>基础设施层</strong>：Kubernetes + Docker 容器化部署</li>
+</ol>
+<h3>2.2 技术栈选型</h3>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>层次</td><td>技术选型</td><td>版本</td><td>选型理由</td></tr>
+<tr><td>开发框架</td><td>Spring Boot</td><td>3.2.x</td><td>成熟稳定，社区活跃</td></tr>
+<tr><td>微服务框架</td><td>Spring Cloud</td><td>2023.x</td><td>完整的微服务解决方案</td></tr>
+<tr><td>服务注册发现</td><td>Nacos</td><td>2.3.x</td><td>阿里开源，性能优秀</td></tr>
+<tr><td>配置中心</td><td>Apollo</td><td>2.2.x</td><td>支持灰度发布、权限管理</td></tr>
+<tr><td>API网关</td><td>Spring Cloud Gateway</td><td>4.1.x</td><td>响应式编程，性能好</td></tr>
+<tr><td>负载均衡</td><td>Ribbon</td><td>—</td><td>客户端负载均衡</td></tr>
+<tr><td>熔断器</td><td>Sentinel</td><td>1.8.x</td><td>阿里开源，流控规则丰富</td></tr>
+<tr><td>消息队列</td><td>Kafka</td><td>3.6.x</td><td>高吞吐量，适合日志和事件</td></tr>
+<tr><td>缓存</td><td>Redis Cluster</td><td>7.2.x</td><td>高性能内存数据库</td></tr>
+<tr><td>搜索引擎</td><td>Elasticsearch</td><td>8.12.x</td><td>全文搜索、聚合分析</td></tr>
+<tr><td>数据库</td><td>MySQL</td><td>8.0.x</td><td>成熟稳定的关系型数据库</td></tr>
+<tr><td>分布式数据库</td><td>TiDB</td><td>7.5.x</td><td>HTAP数据库，支持水平扩展</td></tr>
+<tr><td>容器编排</td><td>Kubernetes</td><td>1.29.x</td><td>业界标准容器编排平台</td></tr>
+<tr><td>监控</td><td>Prometheus + Grafana</td><td>—</td><td>开源监控方案</td></tr>
+<tr><td>日志</td><td>ELK Stack</td><td>—</td><td>日志收集、存储、展示</td></tr>
+<tr><td>链路追踪</td><td>SkyWalking</td><td>9.x</td><td>国产APM工具，中文友好</td></tr>
+</tbody>
+</table>
+<h3>2.3 服务拆分方案</h3>
+<h4>2.3.1 服务边界划分</h4>
+<p>以《业务能力清单》为基准，每个服务对应一个业务能力：</p>
+<table>
+<colgroup><col width="160"><col width="160"><col width="160"><col width="160"><col width="160"></colgroup>
+<tbody>
+<tr><td>服务名称</td><td>服务职责</td><td>数据库</td><td>端口</td><td>团队</td></tr>
+<tr><td>user-service</td><td>用户注册、登录、个人信息管理</td><td>user_db</td><td>8081</td><td>用户团队</td></tr>
+<tr><td>product-service</td><td>商品管理、品类管理、商品评价</td><td>product_db</td><td>8082</td><td>商品团队</td></tr>
+<tr><td>order-service</td><td>订单创建、查询、取消、售后</td><td>order_db</td><td>8083</td><td>交易团队</td></tr>
+<tr><td>payment-service</td><td>支付处理、退款、对账</td><td>payment_db</td><td>8084</td><td>支付团队</td></tr>
+<tr><td>inventory-service</td><td>库存管理、扣减、回滚</td><td>inventory_db</td><td>8085</td><td>仓储团队</td></tr>
+<tr><td>search-service</td><td>商品搜索、搜索建议</td><td>ES</td><td>8086</td><td>搜索团队</td></tr>
+<tr><td>recommendation-service</td><td>个性化推荐、猜你喜欢</td><td>MongoDB</td><td>8087</td><td>推荐团队</td></tr>
+<tr><td>marketing-service</td><td>优惠券、促销活动、积分</td><td>marketing_db</td><td>8088</td><td>营销团队</td></tr>
+<tr><td>notification-service</td><td>短信、邮件、推送通知</td><td>—</td><td>8089</td><td>基础设施团队</td></tr>
+<tr><td>auth-service</td><td>鉴权、Token管理、RBAC</td><td>auth_db</td><td>8090</td><td>安全团队</td></tr>
+</tbody>
+</table>
+<h4>2.3.2 数据范围界定</h4>
+<ul>
+<li>服务内部数据表需满足 ACID 特性</li>
+<li>禁止跨服务引用非主表数据</li>
+<li>通过事件总线（Kafka）实现数据同步</li>
+<li>采用 CQRS 模式分离读写模型</li>
+</ul>
+<h3>2.4 服务通信规范</h3>
+<h4>2.4.1 同步通信</h4>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>场景</td><td>协议</td><td>格式</td><td>说明</td></tr>
+<tr><td>外部API</td><td>HTTP/REST</td><td>JSON</td><td>面向客户端的标准RESTful API</td></tr>
+<tr><td>内部服务调用</td><td>gRPC</td><td>Protobuf</td><td>高性能二进制协议</td></tr>
+<tr><td>文件传输</td><td>HTTP</td><td>Multipart</td><td>大文件上传下载</td></tr>
+</tbody>
+</table>
+<p><strong>统一请求头规范</strong>：</p>
+<table>
+<colgroup><col width="266"><col width="266"><col width="266"></colgroup>
+<tbody>
+<tr><td>Header字段</td><td>说明</td><td>示例</td></tr>
+<tr><td>X-Request-Id</td><td>请求唯一标识（TraceID）</td><td>req-20260808-001</td></tr>
+<tr><td>X-Timestamp</td><td>请求时间戳</td><td>1723084800</td></tr>
+<tr><td>X-Signature</td><td>请求签名</td><td>HMAC-SHA256</td></tr>
+<tr><td>X-App-Version</td><td>应用版本号</td><td>v4.0.0</td></tr>
+<tr><td>X-User-Token</td><td>用户令牌</td><td>JWT Token</td></tr>
+</tbody>
+</table>
+<h4>2.4.2 异步通信</h4>
+<p>核心业务流程通过消息队列（Kafka）解耦，事件格式遵循 JSON Schema 标准。</p>
+<p><strong>事件消息结构</strong>：</p>
+<card type="inline" name="codeblock" value="data:%7B%22search%22%3A%22%22%2C%22hideToolbar%22%3Atrue%2C%22mode%22%3A%22json%22%2C%22code%22%3A%22%7B%5Cn%20%20%5C%22event_id%5C%22%3A%20%5C%22evt-20260808-000001%5C%22%2C%5Cn%20%20%5C%22event_type%5C%22%3A%20%5C%22order.created%5C%22%2C%5Cn%20%20%5C%22event_source%5C%22%3A%20%5C%22order-service%5C%22%2C%5Cn%20%20%5C%22event_timestamp%5C%22%3A%20%5C%222026-08-08T10%3A00%3A00Z%5C%22%2C%5Cn%20%20%5C%22event_version%5C%22%3A%20%5C%221.0%5C%22%2C%5Cn%20%20%5C%22trace_id%5C%22%3A%20%5C%22trace-abc123%5C%22%2C%5Cn%20%20%5C%22data%5C%22%3A%20%7B%5Cn%20%20%20%20%5C%22order_id%5C%22%3A%20%5C%22DD2026080800001%5C%22%2C%5Cn%20%20%20%20%5C%22user_id%5C%22%3A%20%5C%22U100001%5C%22%2C%5Cn%20%20%20%20%5C%22total_amount%5C%22%3A%20299.90%2C%5Cn%20%20%20%20%5C%22items%5C%22%3A%20%5B%5Cn%20%20%20%20%20%20%7B%5C%22product_id%5C%22%3A%20%5C%22P001%5C%22%2C%20%5C%22quantity%5C%22%3A%202%2C%20%5C%22price%5C%22%3A%2099.95%7D%5Cn%20%20%20%20%5D%5Cn%20%20%7D%5Cn%7D%22%2C%22heightLimit%22%3Atrue%2C%22id%22%3A%22mkOJl%22%7D"></card>
+<p><strong>核心事件列表</strong>：</p>
+<table>
+<colgroup><col width="160"><col width="160"><col width="160"><col width="160"><col width="160"></colgroup>
+<tbody>
+<tr><td>事件名称</td><td>生产者</td><td>消费者</td><td>Topic</td><td>说明</td></tr>
+<tr><td>order.created</td><td>order-service</td><td>inventory-service, payment-service, notification-service</td><td>order-events</td><td>订单创建</td></tr>
+<tr><td>order.paid</td><td>payment-service</td><td>order-service, inventory-service, marketing-service</td><td>payment-events</td><td>订单支付成功</td></tr>
+<tr><td>order.cancelled</td><td>order-service</td><td>inventory-service, payment-service, notification-service</td><td>order-events</td><td>订单取消</td></tr>
+<tr><td>inventory.deducted</td><td>inventory-service</td><td>order-service, product-service</td><td>inventory-events</td><td>库存扣减</td></tr>
+<tr><td>user.registered</td><td>user-service</td><td>marketing-service, notification-service</td><td>user-events</td><td>用户注册</td></tr>
+</tbody>
+</table>
+<card type="block" name="hr" value="data:%7B%22id%22%3A%22gdJAW%22%7D"></card>
+<h2>三、服务拆分流程</h2>
+<h3>3.1 现状评估</h3>
+<p>收集现有系统架构文档、接口文档、性能测试报告，识别技术债及业务痛点。</p>
+<h3>3.2 初步拆分</h3>
+<p>基于业务领域模型，绘制服务依赖关系图，提出初步拆分方案。</p>
+<h3>3.3 方案评审</h3>
+<p>组织架构师、开发负责人、业务专家对拆分方案进行评审，重点评估：</p>
+<ul>
+<li>技术可行性</li>
+<li>数据迁移成本</li>
+<li>运维复杂度</li>
+</ul>
+<h3>3.4 POC验证</h3>
+<p>选取典型场景进行最小可行验证，确认服务边界合理性及接口设计有效性。</p>
+<h3>3.5 分步实施</h3>
+<p>制定详细迁移计划，采用蓝绿部署或金丝雀发布策略，逐步完成服务拆分。</p>
+<h3>3.6 验收标准</h3>
+<table>
+<colgroup><col width="400"><col width="400"></colgroup>
+<tbody>
+<tr><td>验收项</td><td>标准</td></tr>
+<tr><td>服务功能完整性</td><td>所有功能模块通过验收测试</td></tr>
+<tr><td>性能达标</td><td>接口 QPS ≥ 200</td></tr>
+<tr><td>监控指标正常</td><td>错误率 < 0.1%</td></tr>
+<tr><td>日志可追踪</td><td>全链路日志覆盖率 100%</td></tr>
+</tbody>
+</table>
+<card type="block" name="hr" value="data:%7B%22id%22%3A%22RkM2a%22%7D"></card>
+<h2>四、数据治理标准</h2>
+<h3>4.1 分库分表规则</h3>
+<p>按业务维度设计分表键：</p>
+<table>
+<colgroup><col width="160"><col width="160"><col width="160"><col width="160"><col width="160"></colgroup>
+<tbody>
+<tr><td>服务</td><td>分表键</td><td>分表策略</td><td>分表数</td><td>说明</td></tr>
+<tr><td>order-service</td><td>user_id</td><td>取模</td><td>16</td><td>按用户ID分表</td></tr>
+<tr><td>inventory-service</td><td>product_id</td><td>取模</td><td>8</td><td>按商品ID分库</td></tr>
+<tr><td>user-service</td><td>user_id</td><td>范围</td><td>4</td><td>按ID范围分表</td></tr>
+<tr><td>payment-service</td><td>order_id</td><td>取模</td><td>16</td><td>按订单ID分表</td></tr>
+</tbody>
+</table>
+<h3>4.2 数据迁移方案</h3>
+<p>采用 Flink 或 MyCat 实现增量数据同步，迁移期间保留全量数据回滚能力。</p>
+<p><strong>迁移步骤</strong>：</p>
+<ol>
+<li><strong>全量同步</strong>：使用 DataX 将旧库数据全量同步到新分库</li>
+<li><strong>增量同步</strong>：通过 Canal 监听 binlog，实时同步增量数据</li>
+<li><strong>数据校验</strong>：采用 MD5 比对迁移前后数据一致性</li>
+<li><strong>灰度切流</strong>：先切 10% 流量到新库，观察无异常后逐步增加</li>
+<li><strong>全量切流</strong>：100% 流量切到新库，旧库保留 7 天作为回滚备份</li>
+</ol>
+<h3>4.3 分布式事务</h3>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>方案</td><td>适用场景</td><td>实现方式</td><td>一致性</td></tr>
+<tr><td>Saga</td><td>跨服务业务流程</td><td>事件补偿模式</td><td>最终一致性</td></tr>
+<tr><td>TCC</td><td>资金类操作</td><td>Try-Confirm-Cancel</td><td>强一致性</td></tr>
+<tr><td>本地消息表</td><td>跨服务异步通知</td><td>消息表+定时轮询</td><td>最终一致性</td></tr>
+<tr><td>Seata AT</td><td>跨库事务</td><td>AT模式自动补偿</td><td>准强一致性</td></tr>
+</tbody>
+</table>
+<card type="block" name="hr" value="data:%7B%22id%22%3A%22bdtmO%22%7D"></card>
+<h2>五、接口重构规范</h2>
+<h3>5.1 版本管理策略</h3>
+<p>采用语义化版本控制（MAJOR.MINOR.PATCH），向后兼容 MINOR 版本变更。</p>
+<table>
+<colgroup><col width="266"><col width="266"><col width="266"></colgroup>
+<tbody>
+<tr><td>版本变更</td><td>触发条件</td><td>兼容性</td></tr>
+<tr><td>MAJOR</td><td>破坏性变更（删除字段、修改语义）</td><td>不向后兼容</td></tr>
+<tr><td>MINOR</td><td>新增功能（新增字段、新增接口）</td><td>向后兼容</td></tr>
+<tr><td>PATCH</td><td>修复Bug</td><td>完全兼容</td></tr>
+</tbody>
+</table>
+<h3>5.2 接口降级方案</h3>
+<p>对核心接口配置熔断器（Sentinel），设置阈值：</p>
+<table>
+<colgroup><col width="266"><col width="266"><col width="266"></colgroup>
+<tbody>
+<tr><td>参数</td><td>值</td><td>说明</td></tr>
+<tr><td>慢调用比例阈值</td><td>50%</td><td>慢调用比例超过此值触发熔断</td></tr>
+<tr><td>慢调用RT阈值</td><td>500ms</td><td>响应时间超过此值判定为慢调用</td></tr>
+<tr><td>最小请求数</td><td>5</td><td>统计窗口内最小请求数</td></tr>
+<tr><td>熔断时长</td><td>10s</td><td>熔断后等待恢复时间</td></tr>
+<tr><td>恢复探测数</td><td>3</td><td>半开状态允许的探测请求数</td></tr>
+</tbody>
+</table>
+<h3>5.3 接口文档标准</h3>
+<p>使用 Swagger/OpenAPI 3.0 自动生成文档，定期更新接口变更记录，业务方需通过测试环境验证。</p>
+<card type="block" name="hr" value="data:%7B%22id%22%3A%22h5b9G%22%7D"></card>
+<h2>六、运维监控要求</h2>
+<h3>6.1 健康检查配置</h3>
+<p>服务启动时主动注册健康检查端点（/actuator/health），网关每 30 秒轮询一次状态。</p>
+<p><strong>健康检查响应格式</strong>：</p>
+<card type="inline" name="codeblock" value="data:%7B%22search%22%3A%22%22%2C%22hideToolbar%22%3Atrue%2C%22mode%22%3A%22json%22%2C%22code%22%3A%22%7B%5Cn%20%20%5C%22status%5C%22%3A%20%5C%22UP%5C%22%2C%5Cn%20%20%5C%22components%5C%22%3A%20%7B%5Cn%20%20%20%20%5C%22db%5C%22%3A%20%7B%5C%22status%5C%22%3A%20%5C%22UP%5C%22%2C%20%5C%22details%5C%22%3A%20%7B%5C%22database%5C%22%3A%20%5C%22MySQL%5C%22%2C%20%5C%22result%5C%22%3A%201%7D%7D%2C%5Cn%20%20%20%20%5C%22redis%5C%22%3A%20%7B%5C%22status%5C%22%3A%20%5C%22UP%5C%22%7D%2C%5Cn%20%20%20%20%5C%22kafka%5C%22%3A%20%7B%5C%22status%5C%22%3A%20%5C%22UP%5C%22%7D%2C%5Cn%20%20%20%20%5C%22diskSpace%5C%22%3A%20%7B%5C%22status%5C%22%3A%20%5C%22UP%5C%22%2C%20%5C%22details%5C%22%3A%20%7B%5C%22total%5C%22%3A%20107374182400%2C%20%5C%22free%5C%22%3A%2053687091200%7D%7D%5Cn%20%20%7D%5Cn%7D%22%2C%22heightLimit%22%3Atrue%2C%22id%22%3A%22k6kw7%22%7D"></card>
+<h3>6.2 性能监控指标</h3>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>指标名称</td><td>基线值</td><td>告警阈值</td><td>严重告警阈值</td></tr>
+<tr><td>CPU利用率</td><td>< 50%</td><td>> 70%</td><td>> 85%</td></tr>
+<tr><td>内存利用率</td><td>< 60%</td><td>> 75%</td><td>> 90%</td></tr>
+<tr><td>磁盘利用率</td><td>< 60%</td><td>> 80%</td><td>> 90%</td></tr>
+<tr><td>接口错误率</td><td>< 0.1%</td><td>> 1%</td><td>> 5%</td></tr>
+<tr><td>接口P99延迟</td><td>< 200ms</td><td>> 500ms</td><td>> 1000ms</td></tr>
+<tr><td>GC停顿时间</td><td>< 100ms</td><td>> 200ms</td><td>> 500ms</td></tr>
+</tbody>
+</table>
+<h3>6.3 日志管理规范</h3>
+<p>采用 ELK 日志系统，配置 Kibana 仪表盘展示核心业务链路日志。</p>
+<p><strong>日志格式标准</strong>：</p>
+<card type="inline" name="codeblock" value="data:%7B%22search%22%3A%22%22%2C%22hideToolbar%22%3Atrue%2C%22mode%22%3A%22json%22%2C%22code%22%3A%22%7B%5Cn%20%20%5C%22timestamp%5C%22%3A%20%5C%222026-08-08T10%3A00%3A00.000Z%5C%22%2C%5Cn%20%20%5C%22level%5C%22%3A%20%5C%22INFO%5C%22%2C%5Cn%20%20%5C%22service%5C%22%3A%20%5C%22order-service%5C%22%2C%5Cn%20%20%5C%22trace_id%5C%22%3A%20%5C%22trace-abc123%5C%22%2C%5Cn%20%20%5C%22span_id%5C%22%3A%20%5C%22span-def456%5C%22%2C%5Cn%20%20%5C%22method%5C%22%3A%20%5C%22createOrder%5C%22%2C%5Cn%20%20%5C%22message%5C%22%3A%20%5C%22Order%20created%20successfully%5C%22%2C%5Cn%20%20%5C%22extra%5C%22%3A%20%7B%5Cn%20%20%20%20%5C%22order_id%5C%22%3A%20%5C%22DD2026080800001%5C%22%2C%5Cn%20%20%20%20%5C%22user_id%5C%22%3A%20%5C%22U100001%5C%22%2C%5Cn%20%20%20%20%5C%22duration_ms%5C%22%3A%2045%5Cn%20%20%7D%5Cn%7D%22%2C%22heightLimit%22%3Atrue%2C%22id%22%3A%22tdADP%22%7D"></card>
+<card type="block" name="hr" value="data:%7B%22id%22%3A%22K2hVw%22%7D"></card>
+<h2>七、组织保障措施</h2>
+<h3>7.1 架构委员会职责</h3>
+<p>每月召开架构评审会，处理跨团队技术争议，制定技术路线图。</p>
+<h3>7.2 技术培训计划</h3>
+<p>每季度组织微服务治理培训，内容涵盖：</p>
+<ul>
+<li>服务熔断、限流、降级实战案例</li>
+<li>分布式事务最佳实践</li>
+<li>Kubernetes 运维实操</li>
+<li>性能调优方法论</li>
+</ul>
+<h3>7.3 代码质量管控</h3>
+<p>推行 SonarQube 静态扫描，禁止使用未封装的 HTTP 客户端，强制接口幂等性设计。</p>
+<h3>7.4 应急响应机制</h3>
+<p>建立服务故障 SLA：</p>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>故障级别</td><td>响应时间</td><td>解决时间</td><td>通知范围</td></tr>
+<tr><td>P0（系统不可用）</td><td>5分钟</td><td>30分钟</td><td>全员通知</td></tr>
+<tr><td>P1（核心功能异常）</td><td>10分钟</td><td>2小时</td><td>相关团队</td></tr>
+<tr><td>P2（非核心功能异常）</td><td>30分钟</td><td>8小时</td><td>负责团队</td></tr>
+<tr><td>P3（轻微问题）</td><td>2小时</td><td>24小时</td><td>值班人员</td></tr>
+</tbody>
+</table>
+<card type="block" name="hr" value="data:%7B%22id%22%3A%22neT1n%22%7D"></card>
+<h2>八、安全设计</h2>
+<h3>8.1 认证与授权</h3>
+<table>
+<colgroup><col width="266"><col width="266"><col width="266"></colgroup>
+<tbody>
+<tr><td>安全层级</td><td>技术方案</td><td>说明</td></tr>
+<tr><td>外部访问</td><td>OAuth 2.0 + JWT</td><td>第三方应用授权</td></tr>
+<tr><td>用户认证</td><td>JWT Token</td><td>有效期2小时，支持刷新</td></tr>
+<tr><td>服务间认证</td><td>mTLS</td><td>双向证书认证</td></tr>
+<tr><td>权限控制</td><td>RBAC</td><td>基于角色的访问控制</td></tr>
+</tbody>
+</table>
+<h3>8.2 数据安全</h3>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>数据类型</td><td>存储安全</td><td>传输安全</td><td>展示安全</td></tr>
+<tr><td>用户密码</td><td>BCrypt加密</td><td>TLS 1.2+</td><td>不展示</td></tr>
+<tr><td>手机号</td><td>AES-256加密</td><td>TLS 1.2+</td><td>中间4位掩码</td></tr>
+<tr><td>身份证号</td><td>AES-256加密</td><td>TLS 1.2+</td><td>中间8位掩码</td></tr>
+<tr><td>银行卡号</td><td>AES-256加密</td><td>TLS 1.2+</td><td>只显示后4位</td></tr>
+<tr><td>支付密码</td><td>BCrypt加密</td><td>TLS 1.2+</td><td>不展示</td></tr>
+</tbody>
+</table>
+<card type="block" name="hr" value="data:%7B%22id%22%3A%22SeyBZ%22%7D"></card>
+<h2>九、附则</h2>
+<h3>9.1 标准修订</h3>
+<p>本标准每年修订一次，重大变更需发布正式公告，自发布之日起 30 日后生效。</p>
+<h3>9.2 解释权归属</h3>
+<p>本标准由技术管理部负责解释。</p>
+<card type="block" name="hr" value="data:%7B%22id%22%3A%22QXk3W%22%7D"></card>
+<p><em>本文档为技术架构设计文档，仅供项目团队内部使用。</em></p>

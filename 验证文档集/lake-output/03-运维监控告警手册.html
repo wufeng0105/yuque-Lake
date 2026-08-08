@@ -1,0 +1,327 @@
+<h1>运维监控告警处理响应手册</h1>
+<blockquote><strong>文档版本</strong>：v2.1.0
+<strong>文档状态</strong>：正式发布
+<strong>编写日期</strong>：2026-08-08
+<strong>编写人</strong>：运维部</blockquote>
+<card-hr/>
+<h2>一、总则</h2>
+<h3>1.1 目的与适用范围</h3>
+<p>本手册旨在规范运维监控告警处理响应流程，提升系统稳定性与应急响应能力。适用于公司所有 IT 系统及网络设备的监控告警事件处理工作，包括但不限于服务器、数据库、网络设备、应用系统等。</p>
+<h3>1.2 基本原则</h3>
+<p>坚持"快速响应、有效处置、逐级上报、闭环管理"原则，确保告警事件得到及时、准确、规范的处置。</p>
+<h3>1.3 组织架构</h3>
+<p>成立告警处理领导小组，由信息技术部负责人担任组长，各系统负责人为成员。设立 24 小时值班制度，明确各岗位职责。</p>
+<table>
+<colgroup><col width="266"><col width="266"><col width="266"></colgroup>
+<tbody>
+<tr><td>角色</td><td>职责</td><td>联系方式</td></tr>
+<tr><td>值班运维工程师（L1）</td><td>首接告警、初步判断、基础处置</td><td>138-0000-0001</td></tr>
+<tr><td>系统负责人（L2）</td><td>深度分析、方案制定、执行修复</td><td>138-0000-0002</td></tr>
+<tr><td>运维主管（L3）</td><td>重大故障决策、资源协调、升级处理</td><td>138-0000-0003</td></tr>
+<tr><td>IT部门负责人（L4）</td><td>P0级故障总指挥、跨部门协调</td><td>138-0000-0004</td></tr>
+</tbody>
+</table>
+<card-hr/>
+<h2>二、告警分级标准</h2>
+<h3>2.1 分级依据</h3>
+<p>根据告警事件的严重程度、影响范围、紧急程度等因素，将告警事件分为四个等级：</p>
+<table>
+<colgroup><col width="160"><col width="160"><col width="160"><col width="160"><col width="160"></colgroup>
+<tbody>
+<tr><td>等级</td><td>名称</td><td>定义</td><td>影响范围</td><td>响应时效</td></tr>
+<tr><td>一级</td><td>特别严重</td><td>系统完全瘫痪或核心业务中断</td><td>全公司</td><td>立即（5分钟内）</td></tr>
+<tr><td>二级</td><td>严重</td><td>系统部分功能异常或性能显著下降</td><td>部分业务</td><td>15分钟内</td></tr>
+<tr><td>三级</td><td>一般</td><td>系统存在潜在风险或轻微异常</td><td>单个服务</td><td>30分钟内</td></tr>
+<tr><td>四级</td><td>轻微</td><td>系统偶发性轻微异常</td><td>不影响业务</td><td>2小时内</td></tr>
+</tbody>
+</table>
+<h3>2.2 一级告警判定标准</h3>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>检测项</td><td>阈值</td><td>持续时间</td><td>说明</td></tr>
+<tr><td>核心服务可用性</td><td>< 95%</td><td>1分钟</td><td>订单、支付、登录等核心服务</td></tr>
+<tr><td>数据库主节点宕机</td><td>不可连接</td><td>即时</td><td>MySQL Master节点</td></tr>
+<tr><td>API网关不可用</td><td>响应率 < 50%</td><td>1分钟</td><td>全站入口</td></tr>
+<tr><td>消息队列积压</td><td>> 100,000条</td><td>5分钟</td><td>Kafka消费滞后</td></tr>
+<tr><td>磁盘空间</td><td>> 95%</td><td>即时</td><td>任何核心服务器</td></tr>
+</tbody>
+</table>
+<h3>2.3 二级告警判定标准</h3>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>检测项</td><td>阈值</td><td>持续时间</td><td>说明</td></tr>
+<tr><td>服务接口错误率</td><td>> 5%</td><td>2分钟</td><td>非核心服务</td></tr>
+<tr><td>CPU利用率</td><td>> 85%</td><td>5分钟</td><td>任何服务器</td></tr>
+<tr><td>内存利用率</td><td>> 90%</td><td>3分钟</td><td>任何服务器</td></tr>
+<tr><td>慢查询数</td><td>> 100/分钟</td><td>5分钟</td><td>数据库</td></tr>
+<tr><td>Redis连接数</td><td>> 80%最大连接</td><td>3分钟</td><td>缓存集群</td></tr>
+</tbody>
+</table>
+<card-hr/>
+<h2>三、告警接收与确认</h2>
+<h3>3.1 接收渠道</h3>
+<p>通过以下监控平台实时接收告警信息：</p>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>监控平台</td><td>监控对象</td><td>告警方式</td><td>值班安排</td></tr>
+<tr><td>Prometheus + Alertmanager</td><td>服务器、容器、应用</td><td>钉钉机器人 + 短信 + 电话</td><td>7×24小时</td></tr>
+<tr><td>Zabbix</td><td>网络设备、机房环境</td><td>邮件 + 短信</td><td>7×24小时</td></tr>
+<tr><td>ELK Stack</td><td>应用日志</td><td>钉钉机器人</td><td>工作时间</td></tr>
+<tr><td>阿里云云监控</td><td>云资源</td><td>短信 + 钉钉</td><td>7×24小时</td></tr>
+<tr><td>自研监控平台</td><td>业务指标</td><td>钉钉机器人 + 邮件</td><td>工作时间</td></tr>
+</tbody>
+</table>
+<h3>3.2 确认流程</h3>
+<ol>
+<li>值班人员接到告警后，需在 <strong>5分钟内</strong> 确认告警有效性，避免误报</li>
+<li>确认无效的告警需记录并分析原因，优化监控规则</li>
+<li>确认有效的告警需立即记录告警时间、级别、影响系统等信息</li>
+</ol>
+<h3>3.3 记录要求</h3>
+<p>建立告警事件台账，内容包括：</p>
+<table>
+<colgroup><col width="266"><col width="266"><col width="266"></colgroup>
+<tbody>
+<tr><td>记录字段</td><td>说明</td><td>示例</td></tr>
+<tr><td>告警ID</td><td>唯一标识</td><td>ALT-20260808-001</td></tr>
+<tr><td>告警时间</td><td>首次触发时间</td><td>2026-08-08 10:00:00</td></tr>
+<tr><td>告警级别</td><td>一/二/三/四级</td><td>二级</td></tr>
+<tr><td>告警来源</td><td>监控平台名称</td><td>Prometheus</td></tr>
+<tr><td>影响系统</td><td>受影响的系统/服务</td><td>order-service</td></tr>
+<tr><td>告警内容</td><td>详细描述</td><td>接口错误率 8.5%，超过阈值 5%</td></tr>
+<tr><td>处理人</td><td>接手处理的工程师</td><td>张三</td></tr>
+<tr><td>处理状态</td><td>待处理/处理中/已解决/已关闭</td><td>已解决</td></tr>
+<tr><td>解决时间</td><td>故障恢复时间</td><td>2026-08-08 10:25:00</td></tr>
+<tr><td>根因分析</td><td>故障原因</td><td>数据库连接池耗尽</td></tr>
+<tr><td>处理措施</td><td>具体操作</td><td>扩容连接池、重启服务</td></tr>
+</tbody>
+</table>
+<card-hr/>
+<h2>四、告警处理流程</h2>
+<h3>4.1 分级响应</h3>
+<table>
+<colgroup><col width="160"><col width="160"><col width="160"><col width="160"><col width="160"></colgroup>
+<tbody>
+<tr><td>告警级别</td><td>响应人员</td><td>响应时效</td><td>处理时效</td><td>上报要求</td></tr>
+<tr><td>一级</td><td>L1→L2→L3→L4</td><td>立即</td><td>1小时初步处置</td><td>每小时向领导小组汇报</td></tr>
+<tr><td>二级</td><td>L1→L2</td><td>15分钟</td><td>4小时完成</td><td>每半天向部门负责人汇报</td></tr>
+<tr><td>三级</td><td>L1</td><td>30分钟</td><td>24小时内分析处理</td><td>纳入周报</td></tr>
+<tr><td>四级</td><td>L1</td><td>2小时</td><td>定期汇总处理</td><td>纳入月报</td></tr>
+</tbody>
+</table>
+<h3>4.2 处置步骤</h3>
+<p><strong>步骤一：分析告警根源</strong></p>
+<p>结合日志、监控数据、用户反馈等多维度信息，定位问题：</p>
+<ol>
+<li>查看告警详情面板，确认告警指标和阈值</li>
+<li>查看关联监控图表（CPU、内存、网络、磁盘）</li>
+<li>查看应用日志（ELK 搜索相关 trace_id）</li>
+<li>查看链路追踪（SkyWalking 定位慢调用）</li>
+<li>查看最近变更记录（是否因发布引起）</li>
+</ol>
+<p><strong>步骤二：制定处置方案</strong></p>
+<p>根据问题性质选择策略：</p>
+<table>
+<colgroup><col width="266"><col width="266"><col width="266"></colgroup>
+<tbody>
+<tr><td>问题类型</td><td>处置策略</td><td>操作步骤</td></tr>
+<tr><td>资源不足</td><td>扩容</td><td>1.增加Pod副本数 2.扩容数据库 3.增加缓存节点</td></tr>
+<tr><td>代码Bug</td><td>回滚</td><td>1.确认最近发布版本 2.执行回滚操作 3.通知研发修复</td></tr>
+<tr><td>配置错误</td><td>修复配置</td><td>1.定位错误配置 2.修改配置中心 3.重启服务</td></tr>
+<tr><td>网络异常</td><td>隔离+排查</td><td>1.隔离故障节点 2.排查网络设备 3.联系网络管理员</td></tr>
+<tr><td>依赖故障</td><td>降级</td><td>1.启用降级开关 2.使用备选方案 3.通知依赖方</td></tr>
+</tbody>
+</table>
+<p><strong>步骤三：执行处置措施</strong></p>
+<p>严格按照操作规程操作，避免二次故障：</p>
+<ol>
+<li>任何操作前必须备份关键数据</li>
+<li>重大操作需经两人复核</li>
+<li>操作过程中需详细记录每一步骤</li>
+<li>处置完成后需进行功能验证和性能测试</li>
+</ol>
+<p><strong>步骤四：验证处置效果</strong></p>
+<ol>
+<li>确认告警已自动恢复</li>
+<li>验证核心业务功能正常</li>
+<li>观察监控指标 15 分钟无异常</li>
+<li>通知相关方故障已恢复</li>
+</ol>
+<h3>4.3 协作机制</h3>
+<table>
+<colgroup><col width="266"><col width="266"><col width="266"></colgroup>
+<tbody>
+<tr><td>协作类型</td><td>适用场景</td><td>协作方式</td></tr>
+<tr><td>跨部门协作</td><td>涉及多个系统的告警</td><td>建立联动机制，明确牵头部门</td></tr>
+<tr><td>技术支持</td><td>需要外部技术专家协助</td><td>联系厂商技术支持或行业专家</td></tr>
+<tr><td>信息通报</td><td>处理过程中信息同步</td><td>通过钉钉群实时通报处理进展</td></tr>
+</tbody>
+</table>
+<card-hr/>
+<h2>五、应急响应预案</h2>
+<h3>5.1 一级告警应急措施</h3>
+<p><strong>数据库主节点宕机</strong>：</p>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>步骤</td><td>操作</td><td>负责人</td><td>预计时间</td></tr>
+<tr><td>1</td><td>确认主节点状态，检查是否可快速恢复</td><td>L1值班</td><td>2分钟</td></tr>
+<tr><td>2</td><td>启动主从切换流程</td><td>L2系统负责人</td><td>5分钟</td></tr>
+<tr><td>3</td><td>修改应用数据源指向新主节点</td><td>L2系统负责人</td><td>3分钟</td></tr>
+<tr><td>4</td><td>验证服务恢复正常</td><td>L1值班</td><td>5分钟</td></tr>
+<tr><td>5</td><td>排查原主节点故障原因</td><td>L2系统负责人</td><td>30分钟</td></tr>
+<tr><td>6</td><td>恢复原主节点作为从节点</td><td>L2系统负责人</td><td>60分钟</td></tr>
+</tbody>
+</table>
+<p><strong>核心服务不可用</strong>：</p>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>步骤</td><td>操作</td><td>负责人</td><td>预计时间</td></tr>
+<tr><td>1</td><td>确认故障范围，隔离故障节点</td><td>L1值班</td><td>3分钟</td></tr>
+<tr><td>2</td><td>启动备用系统或切换至降级模式</td><td>L2系统负责人</td><td>5分钟</td></tr>
+<tr><td>3</td><td>组织技术骨干成立应急小组</td><td>L3运维主管</td><td>5分钟</td></tr>
+<tr><td>4</td><td>24小时值守，每小时汇报进展</td><td>全员</td><td>持续</td></tr>
+<tr><td>5</td><td>排查根因，制定修复方案</td><td>L2系统负责人</td><td>30分钟</td></tr>
+<tr><td>6</td><td>执行修复并验证</td><td>L2系统负责人</td><td>60分钟</td></tr>
+</tbody>
+</table>
+<h3>5.2 二级告警应急措施</h3>
+<table>
+<colgroup><col width="266"><col width="266"><col width="266"></colgroup>
+<tbody>
+<tr><td>措施类型</td><td>具体操作</td><td>执行人</td></tr>
+<tr><td>优先处理核心业务</td><td>限制非关键操作，减少资源消耗</td><td>L1值班</td></tr>
+<tr><td>资源临时扩容</td><td>增加Pod副本、扩容缓存</td><td>L1值班</td></tr>
+<tr><td>限流降级</td><td>开启Sentinel限流规则</td><td>L1值班</td></tr>
+<tr><td>日志排查</td><td>通过ELK搜索错误日志</td><td>L2系统负责人</td></tr>
+<tr><td>每半天汇报</td><td>向部门负责人汇报处置情况</td><td>L1值班</td></tr>
+</tbody>
+</table>
+<card-hr/>
+<h2>六、告警处置规范</h2>
+<h3>6.1 操作规程</h3>
+<ol>
+<li>任何操作前必须备份关键数据（数据库快照、配置文件备份）</li>
+<li>重大操作需经两人复核（操作人 + 复核人）</li>
+<li>操作过程中需详细记录每一步骤（操作时间、操作内容、执行结果）</li>
+<li>处置完成后需归档所有文档（告警记录、处置过程、根因分析）</li>
+</ol>
+<h3>6.2 资源调配</h3>
+<table>
+<colgroup><col width="266"><col width="266"><col width="266"></colgroup>
+<tbody>
+<tr><td>告警级别</td><td>人力资源调配</td><td>预算权限</td></tr>
+<tr><td>一级</td><td>全体运维人员参与，必要时召回休假人员</td><td>可临时申请额外预算</td></tr>
+<tr><td>二级</td><td>至少2名运维工程师处理</td><td>部门内调配</td></tr>
+<tr><td>三级</td><td>值班人员处理</td><td>无需额外预算</td></tr>
+<tr><td>四级</td><td>纳入定期维护计划</td><td>无需额外预算</td></tr>
+</tbody>
+</table>
+<h3>6.3 事后复盘</h3>
+<p>一级、二级告警处置完成后，需在 <strong>48小时内</strong> 召开复盘会议：</p>
+<table>
+<colgroup><col width="400"><col width="400"></colgroup>
+<tbody>
+<tr><td>复盘项</td><td>内容</td></tr>
+<tr><td>故障时间线</td><td>从告警触发到完全恢复的完整时间线</td></tr>
+<tr><td>根因分析</td><td>使用5Why分析法，找到根本原因</td></tr>
+<tr><td>处置评估</td><td>评估处置过程中的优点和不足</td></tr>
+<tr><td>改进措施</td><td>制定具体的改进措施和跟进计划</td></tr>
+<tr><td>知识沉淀</td><td>更新FAQ、操作手册、应急预案</td></tr>
+</tbody>
+</table>
+<card-hr/>
+<h2>七、监控告警配置规范</h2>
+<h3>7.1 告警规则配置</h3>
+<p><strong>Prometheus 告警规则示例</strong>：</p>
+<card-codeblock mode="yaml">groups:
+  - name: service_alerts
+    rules:
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(http_requests_total{status=~"5.."}[2m])) by (service)
+          / sum(rate(http_requests_total[2m])) by (service)
+          &gt; 0.05
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.service }} 错误率过高"
+          description: "{{ $labels.service }} 接口错误率 {{ $value }}%，超过阈值 5%"
+
+      - alert: HighCPU
+        expr: |
+          100 - avg(increase(node_cpu_seconds_total{mode="idle"}[5m])) by (instance) * 100 / 300
+          &gt; 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.instance }} CPU 使用率过高"
+          description: "CPU 使用率 {{ $value }}%，超过阈值 85%"</card-codeblock>
+<h3>7.2 告警通知模板</h3>
+<table>
+<colgroup><col width="400"><col width="400"></colgroup>
+<tbody>
+<tr><td>通知渠道</td><td>模板内容</td></tr>
+<tr><td>钉钉</td><td>🔴【{{.severity}}】{{.alertname}}\n服务：{{.service}}\n实例：{{.instance}}\n详情：{{.description}}\n时间：{{.startsAt}}\n处理：https://monitor.example.com/alert/{{.id}}</td></tr>
+<tr><td>短信</td><td>【告警】{{.severity}}级 {{.alertname}} 服务：{{.service}} 详情：{{.description}} 时间：{{.startsAt}}</td></tr>
+<tr><td>电话</td><td>自动语音播报：{{.severity}}级告警，{{.alertname}}，服务{{.service}}异常，请立即处理。</td></tr>
+</tbody>
+</table>
+<card-hr/>
+<h2>八、常用运维操作手册</h2>
+<h3>8.1 服务扩缩容</h3>
+<table>
+<colgroup><col width="266"><col width="266"><col width="266"></colgroup>
+<tbody>
+<tr><td>操作场景</td><td>操作命令</td><td>验证方式</td></tr>
+<tr><td>扩容Pod</td><td><code>kubectl scale deployment order-service --replicas=5</code></td><td><code>kubectl get pods -l app=order-service</code></td></tr>
+<tr><td>缩容Pod</td><td><code>kubectl scale deployment order-service --replicas=2</code></td><td>同上</td></tr>
+<tr><td>HPA自动扩缩</td><td><code>kubectl autoscale deployment order-service --min=2 --max=10 --cpu-percent=70</code></td><td><code>kubectl get hpa order-service</code></td></tr>
+</tbody>
+</table>
+<h3>8.2 数据库运维</h3>
+<table>
+<colgroup><col width="266"><col width="266"><col width="266"></colgroup>
+<tbody>
+<tr><td>操作场景</td><td>操作步骤</td><td>风险等级</td></tr>
+<tr><td>主从切换</td><td>1.确认从库同步状态 2.提升从库为主库 3.修改应用数据源 4.验证服务</td><td>高</td></tr>
+<tr><td>慢查询优化</td><td>1.开启慢查询日志 2.分析慢查询 3.添加索引 4.验证优化效果</td><td>中</td></tr>
+<tr><td>数据备份</td><td>1.mysqldump全量备份 2.验证备份文件 3.异地存储</td><td>低</td></tr>
+<tr><td>数据恢复</td><td>1.停止服务 2.恢复数据 3.验证数据 4.重启服务</td><td>高</td></tr>
+</tbody>
+</table>
+<card-hr/>
+<h2>九、附录</h2>
+<h3>附录A：常见问题处理（FAQ）</h3>
+<table>
+<colgroup><col width="266"><col width="266"><col width="266"></colgroup>
+<tbody>
+<tr><td>问题现象</td><td>可能原因</td><td>处理方法</td></tr>
+<tr><td>服务无法启动</td><td>配置错误/端口冲突/依赖服务不可用</td><td>检查配置、排查端口、确认依赖</td></tr>
+<tr><td>接口超时</td><td>数据库慢查询/网络延迟/资源不足</td><td>排查慢查询、检查网络、扩容资源</td></tr>
+<tr><td>内存溢出（OOM）</td><td>内存泄漏/堆内存不足</td><td>增加堆内存、排查内存泄漏、重启服务</td></tr>
+<tr><td>磁盘满</td><td>日志文件过大/临时文件未清理</td><td>清理日志、扩容磁盘、配置日志轮转</td></tr>
+<tr><td>CPU飙高</td><td>死循环/大量计算/GC频繁</td><td>抓取线程栈、分析火焰图、优化代码</td></tr>
+</tbody>
+</table>
+<h3>附录B：紧急联系人列表</h3>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>角色</td><td>姓名</td><td>手机</td><td>邮箱</td></tr>
+<tr><td>运维值班-L1</td><td>张三</td><td>138-0000-0001</td><td>zhangsan@example.com</td></tr>
+<tr><td>系统负责人-L2</td><td>李四</td><td>138-0000-0002</td><td>lisi@example.com</td></tr>
+<tr><td>运维主管-L3</td><td>王五</td><td>138-0000-0003</td><td>wangwu@example.com</td></tr>
+<tr><td>IT负责人-L4</td><td>赵六</td><td>138-0000-0004</td><td>zhaoliu@example.com</td></tr>
+<tr><td>网络管理员</td><td>孙七</td><td>138-0000-0005</td><td>sunqi@example.com</td></tr>
+<tr><td>DBA</td><td>周八</td><td>138-0000-0006</td><td>zhouba@example.com</td></tr>
+</tbody>
+</table>
+<card-hr/>
+<p><em>本文档为运维操作手册，仅供运维团队内部使用。</em></p>

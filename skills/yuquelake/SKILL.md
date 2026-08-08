@@ -7,9 +7,9 @@ description: Use when the user provides any document and wants to convert it to 
 
 ## 概述
 
-将任意格式的输入文档转换为语雀 Lake 格式。核心是四步流程：清洗 → 梳理 → 伪代码 → 语法。
+将任意格式的输入文档转换为语雀 Lake 格式。核心流程：规划 → 清洗 → 梳理 → 伪代码 → 语法。
 
-每一步的职责不同，分离它们是为了让 AI 聚焦于内容语义，脚本处理机械语法。
+第零步规划分析需求、选择处理路径；第一步到第四步执行转换。每一步的职责不同，分离它们是为了让 AI 聚焦于内容语义，脚本处理机械语法。
 
 ## 何时使用
 
@@ -22,6 +22,35 @@ description: Use when the user provides any document and wants to convert it to 
 
 - 用户仅要求 Markdown → 语雀（用语雀 API `format=markdown` 即可，不需要 Lake 转换）
 - 用户仅询问语雀平台功能（非格式转换）
+
+## 第零步：需求分析与处理规划
+
+**目标**：分析用户需求，确定处理路径，输出处理规划表。
+
+详细规划流程见 [planning-guide.md](references/planning-guide.md)。
+
+### 核心原则
+
+**任何文档的流程第一步永远都是清洗格式，无一例外。** 区别只在于清洗的对象不同（Markdown 标记 / HTML 标签 / 纯文本空白），步骤 1 永远执行。
+
+### 规划内容
+
+- **用户意图**：转换为 Lake / 导入知识库 / 批量迁移
+- **输入格式**：Markdown / HTML / 纯文本 / 二进制
+- **输入规模**：单文件 / 多文件
+- **文档类型**：用户指定 / 自动检测
+- **输出方式**：单 .lake / 多 .lake / .lakebook / API 直传
+
+### 质量门
+
+每步完成后检查质量门再进入下一步（详见规划流程指南）：
+- 门 0：输入验证（步骤 1 前）
+- 门 1：清洗验证（步骤 1 后）
+- 门 2：梳理验证（步骤 2 后）
+- 门 3：伪代码验证（步骤 3 后）
+- 门 4：输出验证（步骤 4 后）
+
+**输出**：处理规划表 + 选择的处理路径
 
 ## 第一步：清洗
 
@@ -197,5 +226,7 @@ python scripts/lake-converter.py input.html output.lake --title "文档标题"
 - [references/tag-mapping.json](references/tag-mapping.json) — 伪标签到真实 Lake 语法的映射表（脚本读取）
 - [references/lake-format-spec.md](references/lake-format-spec.md) — 标准 HTML 标签使用场景
 - [references/lakebook-structure.md](references/lakebook-structure.md) — .lakebook 打包结构
+- [references/planning-guide.md](references/planning-guide.md) — 规划流程：需求分析、决策树、质量门、批量处理
 - [references/methodology.md](references/methodology.md) — 文档结构化方法论参考
 - [scripts/lake-converter.py](scripts/lake-converter.py) — 伪标签转换脚本
+- [scripts/md-to-lake.py](scripts/md-to-lake.py) — Markdown 转伪标签 HTML 脚本

@@ -1,0 +1,218 @@
+<h1>技术方案评审报告：订单系统重构</h1>
+<blockquote><strong>文档版本</strong>：v1.0.0
+<strong>文档状态</strong>：已评审
+<strong>编写日期</strong>：2026-08-08
+<strong>编写人</strong>：架构组</blockquote>
+<card-hr/>
+<h2>一、项目背景</h2>
+<h3>1.1 需求来源</h3>
+<p>当前订单系统基于单体架构，随着业务增长，日均订单量从 5 万增长到 50 万，峰值超过 10 万/小时。现有系统存在以下问题：</p>
+<table>
+<colgroup><col width="266"><col width="266"><col width="266"></colgroup>
+<tbody>
+<tr><td>问题</td><td>影响</td><td>紧急程度</td></tr>
+<tr><td>单体架构性能瓶颈</td><td>峰值期接口响应超过5秒</td><td>高</td></tr>
+<tr><td>数据库单点瓶颈</td><td>订单表超过5亿行，查询缓慢</td><td>高</td></tr>
+<tr><td>部署耦合</td><td>小改动需要全量发布</td><td>中</td></tr>
+<tr><td>技术栈老化</td><td>Spring MVC 4.x，安全漏洞</td><td>中</td></tr>
+</tbody>
+</table>
+<h3>1.2 项目目标</h3>
+<table>
+<colgroup><col width="266"><col width="266"><col width="266"></colgroup>
+<tbody>
+<tr><td>目标</td><td>量化指标</td><td>验收方式</td></tr>
+<tr><td>提升性能</td><td>峰值QPS ≥ 10,000，P95 ≤ 500ms</td><td>压力测试</td></tr>
+<tr><td>提升可用性</td><td>月度可用率 ≥ 99.95%</td><td>监控统计</td></tr>
+<tr><td>数据库扩展</td><td>支持分库分表，单表数据 < 5000万行</td><td>数据迁移验证</td></tr>
+<tr><td>解耦部署</td><td>支持独立部署和灰度发布</td><td>发布演练</td></tr>
+</tbody>
+</table>
+<h3>1.3 非功能性需求</h3>
+<table>
+<colgroup><col width="400"><col width="400"></colgroup>
+<tbody>
+<tr><td>需求类型</td><td>具体要求</td></tr>
+<tr><td>性能</td><td>QPS≥10,000，P95≤500ms，P99≤2s</td></tr>
+<tr><td>可用性</td><td>≥99.95%，RTO≤15min，RPO≤5min</td></tr>
+<tr><td>安全</td><td>数据加密、权限控制、审计日志</td></tr>
+<tr><td>可扩展</td><td>支持水平扩展，弹性伸缩</td></tr>
+<tr><td>可维护</td><td>代码覆盖率≥85%，文档完善</td></tr>
+</tbody>
+</table>
+<card-hr/>
+<h2>二、备选方案对比</h2>
+<h3>2.1 方案概述</h3>
+<table>
+<colgroup><col width="160"><col width="160"><col width="160"><col width="160"><col width="160"></colgroup>
+<tbody>
+<tr><td>方案</td><td>架构风格</td><td>技术栈</td><td>开发周期</td><td>估算成本</td></tr>
+<tr><td>方案A</td><td>微服务（Spring Cloud）</td><td>Java 17 + Spring Boot 3 + Nacos</td><td>3个月</td><td>80万</td></tr>
+<tr><td>方案B</td><td>微服务（Go + Kratos）</td><td>Go 1.21 + Kratos + Consul</td><td>4个月</td><td>60万</td></tr>
+<tr><td>方案C</td><td>服务化（Dubbo）</td><td>Java 17 + Dubbo 3 + Nacos</td><td>2.5个月</td><td>70万</td></tr>
+</tbody>
+</table>
+<h3>2.2 方案详细对比</h3>
+<table>
+<colgroup><col width="160"><col width="160"><col width="160"><col width="160"><col width="160"></colgroup>
+<tbody>
+<tr><td>评估维度</td><td>权重</td><td>方案A(Spring Cloud)</td><td>方案B(Go+Kratos)</td><td>方案C(Dubbo)</td></tr>
+<tr><td>需求满足度</td><td>30%</td><td>9/10</td><td>8/10</td><td>8/10</td></tr>
+<tr><td>技术可行性</td><td>25%</td><td>9/10</td><td>7/10</td><td>9/10</td></tr>
+<tr><td>开发效率</td><td>20%</td><td>8/10</td><td>6/10</td><td>9/10</td></tr>
+<tr><td>运维成本</td><td>15%</td><td>7/10</td><td>9/10</td><td>7/10</td></tr>
+<tr><td>团队能力匹配</td><td>10%</td><td>9/10</td><td>5/10</td><td>8/10</td></tr>
+<tr><td>加权总分</td><td>100%</td><td><strong>8.5</strong></td><td><strong>7.25</strong></td><td><strong>8.35</strong></td></tr>
+</tbody>
+</table>
+<h3>2.3 方案优劣势分析</h3>
+<h4>方案A：Spring Cloud 微服务</h4>
+<table>
+<colgroup><col width="400"><col width="400"></colgroup>
+<tbody>
+<tr><td>优势</td><td>劣势</td></tr>
+<tr><td>生态完善，社区活跃</td><td>JVM内存占用较大</td></tr>
+<tr><td>团队Java经验丰富</td><td>启动速度慢（30s+）</td></tr>
+<tr><td>招聘容易</td><td>需要较多服务器资源</td></tr>
+<tr><td>与现有系统集成方便</td><td>运维复杂度较高</td></tr>
+</tbody>
+</table>
+<h4>方案B：Go + Kratos 微服务</h4>
+<table>
+<colgroup><col width="400"><col width="400"></colgroup>
+<tbody>
+<tr><td>优势</td><td>劣势</td></tr>
+<tr><td>高性能，低内存占用</td><td>团队Go经验不足</td></tr>
+<tr><td>启动速度快（<5s）</td><td>招聘困难</td></tr>
+<tr><td>部署简单（单二进制）</td><td>生态不如Java丰富</td></tr>
+<tr><td>运维成本低</td><td>学习曲线陡峭</td></tr>
+</tbody>
+</table>
+<h4>方案C：Dubbo 服务化</h4>
+<table>
+<colgroup><col width="400"><col width="400"></colgroup>
+<tbody>
+<tr><td>优势</td><td>劣势</td></tr>
+<tr><td>开发效率高</td><td>架构不够彻底（半微服务）</td></tr>
+<tr><td>团队熟悉度高</td><td>生态不如Spring Cloud</td></tr>
+<tr><td>性能优秀（RPC）</td><td>HTTP支持不如REST</td></tr>
+<tr><td>开发周期短</td><td>未来扩展受限</td></tr>
+</tbody>
+</table>
+<h3>2.4 风险分析</h3>
+<table>
+<colgroup><col width="160"><col width="160"><col width="160"><col width="160"><col width="160"></colgroup>
+<tbody>
+<tr><td>方案</td><td>技术风险</td><td>业务风险</td><td>运维风险</td><td>综合风险</td></tr>
+<tr><td>方案A</td><td>低</td><td>低</td><td>中</td><td>中</td></tr>
+<tr><td>方案B</td><td>高</td><td>中</td><td>低</td><td>高</td></tr>
+<tr><td>方案C</td><td>低</td><td>低</td><td>中</td><td>中</td></tr>
+</tbody>
+</table>
+<card-hr/>
+<h2>三、评审结论</h2>
+<h3>3.1 最终选定方案</h3>
+<p><strong>选定方案A：Spring Cloud 微服务架构</strong></p>
+<p>选定理由：</p>
+<ol>
+<li>加权总分最高（8.5分）</li>
+<li>团队Java技术栈匹配度最高</li>
+<li>生态完善，社区活跃，问题解决容易</li>
+<li>与现有系统集成成本最低</li>
+<li>招聘市场人才充足</li>
+</ol>
+<h3>3.2 评审意见汇总</h3>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>评审人</td><td>角色</td><td>意见</td><td>结论</td></tr>
+<tr><td>张三</td><td>首席架构师</td><td>建议方案A，技术成熟度高</td><td>同意</td></tr>
+<tr><td>李四</td><td>研发负责人</td><td>方案A团队适应快，但需关注JVM性能</td><td>同意</td></tr>
+<tr><td>王五</td><td>运维负责人</td><td>方案A运维复杂度高，需加强K8s能力建设</td><td>有条件同意</td></tr>
+<tr><td>赵六</td><td>产品负责人</td><td>方案A开发周期可接受</td><td>同意</td></tr>
+<tr><td>孙七</td><td>安全负责人</td><td>需补充安全设计方案</td><td>有条件同意</td></tr>
+</tbody>
+</table>
+<h3>3.3 待优化项</h3>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>编号</td><td>待优化项</td><td>责任人</td><td>完成时限</td></tr>
+<tr><td>1</td><td>补充JVM性能调优方案</td><td>架构组</td><td>2026-08-15</td></tr>
+<tr><td>2</td><td>制定K8s运维能力建设计划</td><td>运维组</td><td>2026-08-20</td></tr>
+<tr><td>3</td><td>完善安全设计方案（数据加密、接口安全）</td><td>安全组</td><td>2026-08-15</td></tr>
+<tr><td>4</td><td>制定数据迁移方案和回滚预案</td><td>架构组</td><td>2026-08-20</td></tr>
+<tr><td>5</td><td>确定监控告警方案</td><td>运维组</td><td>2026-08-15</td></tr>
+</tbody>
+</table>
+<card-hr/>
+<h2>四、实施计划</h2>
+<h3>4.1 里程碑</h3>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>阶段</td><td>开始时间</td><td>结束时间</td><td>主要交付物</td></tr>
+<tr><td>详细设计</td><td>2026-08-10</td><td>2026-08-25</td><td>详细设计文档、接口文档</td></tr>
+<tr><td>环境搭建</td><td>2026-08-15</td><td>2026-08-25</td><td>K8s集群、CI/CD流水线</td></tr>
+<tr><td>核心开发</td><td>2026-08-26</td><td>2026-10-15</td><td>订单服务、支付服务、库存服务</td></tr>
+<tr><td>数据迁移</td><td>2026-10-01</td><td>2026-10-20</td><td>数据迁移脚本、验证报告</td></tr>
+<tr><td>联调测试</td><td>2026-10-16</td><td>2026-10-31</td><td>测试报告、Bug修复</td></tr>
+<tr><td>性能测试</td><td>2026-11-01</td><td>2026-11-07</td><td>性能测试报告</td></tr>
+<tr><td>灰度发布</td><td>2026-11-08</td><td>2026-11-20</td><td>灰度发布报告</td></tr>
+<tr><td>全量上线</td><td>2026-11-21</td><td>2026-11-30</td><td>上线总结报告</td></tr>
+</tbody>
+</table>
+<h3>4.2 资源需求</h3>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>角色</td><td>人数</td><td>工作量</td><td>说明</td></tr>
+<tr><td>架构师</td><td>1</td><td>全程</td><td>方案设计、技术评审</td></tr>
+<tr><td>后端开发</td><td>6</td><td>3个月</td><td>微服务开发</td></tr>
+<tr><td>前端开发</td><td>2</td><td>1.5个月</td><td>管理后台适配</td></tr>
+<tr><td>测试工程师</td><td>3</td><td>1个月</td><td>功能+性能测试</td></tr>
+<tr><td>运维工程师</td><td>2</td><td>全程</td><td>K8s、CI/CD、监控</td></tr>
+<tr><td>DBA</td><td>1</td><td>1个月</td><td>数据迁移、分库分表</td></tr>
+</tbody>
+</table>
+<h3>4.3 预算估算</h3>
+<table>
+<colgroup><col width="266"><col width="266"><col width="266"></colgroup>
+<tbody>
+<tr><td>费用项</td><td>金额（万元）</td><td>说明</td></tr>
+<tr><td>人力成本</td><td>60</td><td>15人×3个月</td></tr>
+<tr><td>服务器</td><td>12</td><td>新增8台服务器</td></tr>
+<tr><td>软件许可</td><td>3</td><td>监控工具、安全扫描</td></tr>
+<tr><td>培训费用</td><td>2</td><td>K8s培训</td></tr>
+<tr><td>应急储备</td><td>3</td><td>5%应急</td></tr>
+<tr><td><strong>合计</strong></td><td><strong>80</strong></td><td>—</td></tr>
+</tbody>
+</table>
+<card-hr/>
+<h2>五、附录</h2>
+<h3>附录A：评审签到表</h3>
+<table>
+<colgroup><col width="160"><col width="160"><col width="160"><col width="160"><col width="160"></colgroup>
+<tbody>
+<tr><td>序号</td><td>姓名</td><td>部门</td><td>角色</td><td>签到时间</td></tr>
+<tr><td>1</td><td>张三</td><td>技术部</td><td>首席架构师</td><td>2026-08-08 14:00</td></tr>
+<tr><td>2</td><td>李四</td><td>研发部</td><td>研发负责人</td><td>2026-08-08 14:00</td></tr>
+<tr><td>3</td><td>王五</td><td>运维部</td><td>运维负责人</td><td>2026-08-08 14:02</td></tr>
+<tr><td>4</td><td>赵六</td><td>产品部</td><td>产品负责人</td><td>2026-08-08 14:00</td></tr>
+<tr><td>5</td><td>孙七</td><td>安全部</td><td>安全负责人</td><td>2026-08-08 14:01</td></tr>
+</tbody>
+</table>
+<h3>附录B：评审材料清单</h3>
+<table>
+<colgroup><col width="200"><col width="200"><col width="200"><col width="200"></colgroup>
+<tbody>
+<tr><td>序号</td><td>文档名称</td><td>版本</td><td>提交人</td></tr>
+<tr><td>1</td><td>订单系统重构技术方案 v1.0</td><td>v1.0</td><td>架构组</td></tr>
+<tr><td>2</td><td>订单系统现状分析报告</td><td>v1.0</td><td>架构组</td></tr>
+<tr><td>3</td><td>备选方案对比矩阵</td><td>v1.0</td><td>架构组</td></tr>
+<tr><td>4</td><td>风险评估报告</td><td>v1.0</td><td>架构组</td></tr>
+<tr><td>5</td><td>项目预算明细</td><td>v1.0</td><td>项目管理部</td></tr>
+</tbody>
+</table>
+<card-hr/>
+<p><em>本文档为技术方案评审报告，仅供项目团队内部使用。</em></p>

@@ -10,7 +10,7 @@
 - **编辑器核心**：`@alipay/lakex-doc` npm 包（v1.64.0+）
 - **Lakebook**：tar 归档，含 `$meta.json`（tocYml YAML）和 JSON 文档条目
 - **语雀 API**：format 参数支持 `markdown` 和 `lake`
-- **Card 类型**：30+ 种（codeblock, image, math, file, hr, label, yuque, table, bookmark, attachment, video, audio, status, note, gantt, mermaid, plantuml, html, collapse, quote, catalog, blockquote, divider, time, calendar, localdoc, api, codepen, bilibili, youtube, drawio, minder）
+- **Card 类型**：13 种有真实样本验证的 Card（codeblock, image, math, hr, diagram, checkbox, label, file, dateCard, calendar, dataTable, board, yuque）+ 4 种非 Card 结构（lake-alert, lake-collapse, lake-columns, ne-label）。详见 `skills/yuquelake/references/card-reference.md`
 
 ## 目录结构
 
@@ -19,19 +19,21 @@ yuque-Lake/
 ├── CLAUDE.md              # 项目规则（本文件）
 ├── README.md              # 项目说明
 ├── .gitignore
-├── references/            # Lake 格式参考文档
-│   └── LAKE_FORMAT_SPEC.md
-├── repos/                 # 克隆的参考仓库
-│   ├── vscode-plugin-lake-editor/
-│   ├── sdk/
-│   ├── yuque-cli/
-│   ├── openapi-metadata/
-│   ├── yuque-ecosystem/
-│   └── lakex-doc-extract/
+├── 验证文档集/            # 真实 .lake 样本文件
+├── *.lake                # 测试导出的 .lake 文件
 ├── skills/                # 项目级 skill 开发目录
 │   └── yuquelake/
-│       ├── SKILL.md
-│       └── references/
+│       ├── SKILL.md          # 四步流程主指令
+│       ├── evals/             # 测试用例
+│       ├── references/       # 参考文档
+│       │   ├── card-reference.md    # 13 Card + 4 非 Card 结构
+│       │   ├── lake-format-spec.md  # 标准 HTML 标签规范
+│       │   ├── tag-mapping.json     # 伪标签→真实语法映射表
+│       │   ├── methodology.md       # 文档结构化方法论
+│       │   ├── lakebook-structure.md
+│       │   └── document-types/      # 10 种文档类型骨架
+│       └── scripts/
+│           └── lake-converter.py   # 伪标签转换脚本 v4
 └── .catpaw/skills/        # CatPaw 项目级 skill 部署目录（按需创建）
 ```
 
@@ -139,20 +141,25 @@ skill-name/
 
 | TDD 概念 | Skill 创建 |
 |-------------|----------------|
-| 测试用例 | 压力场景测试 |
+| 测试用例 | 真实用户会说的测试 prompt |
 | 生产代码 | SKILL.md 文档 |
 | 测试失败（RED） | 无 skill 时 AI 的基线行为 |
 | 测试通过（GREEN） | 有 skill 时 AI 遵守指令 |
-| 重构（REFACTOR） | 关闭漏洞，补充 Rationalization 表 |
+| 重构（REFACTOR） | 根据反馈关闭漏洞 |
 
-#### 测试步骤
+#### 测试步骤（必须完整执行，不可跳过）
 
-1. 设计 2-3 个真实用户会说的测试 prompt
-2. 保存到 `evals/evals.json`
-3. 运行测试（有 skill vs 无 skill 对比）
-4. 评估输出质量
-5. 根据反馈改进 skill
-6. 重复直到满意
+1. 设计 2-3 个真实用户会说的测试 prompt，保存到 `evals/evals.json`
+2. **与用户确认测试用例**：“这些测试用例看起来对吗？需要增加或修改吗？”
+3. **并行运行测试**：每个测试用例同时启动两个子代理：
+   - with-skill：读取 SKILL.md 后执行任务，输出到 `eval-N/with_skill/outputs/`
+   - without-skill（baseline）：无 skill 执行相同任务，输出到 `eval-N/without_skill/outputs/`
+4. **起草 assertions**：在子代理运行期间，为每个测试用例编写可客观验证的断言
+5. **评分**：子代理完成后，对每个输出逐条检查断言，保存到 `grading.json`
+6. **启动 eval viewer**：用 `generate_review.py` 生成 HTML，让用户在浏览器中审查输出质量
+7. **读取反馈**：用户审查后读取 `feedback.json`，空反馈表示满意
+8. **迭代改进**：根据反馈修改 SKILL.md，重新运行所有测试
+9. **重复**直到用户满意或反馈全空
 
 ### 阶段六：部署（Deployment）
 

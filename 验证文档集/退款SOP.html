@@ -1,0 +1,148 @@
+<!doctype lake>
+<h1>用户退款标准操作程序</h1>
+
+<h2>目的</h2>
+<p>规范用户退款流程，确保退款金额核算准确、审批合规、执行可追溯。</p>
+
+<h2>范围</h2>
+<p>适用于所有付费用户的退款申请处理。不适用于纯技术故障退款（走专项流程）。</p>
+
+<h2>定义与术语</h2>
+<table><tbody>
+<tr><td>充值折扣</td><td>用户充值时享受的折扣比例（如 0.75 表示七五折）</td></tr>
+<tr><td>邀请返利</td><td>用户通过邀请链接获得的奖励余额</td></tr>
+<tr><td>按量付费</td><td>按实际使用量计费的模式，余额永久有效</td></tr>
+<tr><td>支付手续费</td><td>支付渠道收取的手续费，按支付金额的 0.6% 计算</td></tr>
+</tbody></table>
+
+<h2>职责</h2>
+<table><tbody>
+<tr><td>客服</td><td>接待用户、收集材料、核算金额、登记周报</td></tr>
+<tr><td>主管（杰哥）</td><td>确认退款金额</td></tr>
+<tr><td>阿飞</td><td>执行打款、注销账号</td></tr>
+<tr><td>阿滨</td><td>执行打款</td></tr>
+<tr><td>张总</td><td>报销审批</td></tr>
+</tbody></table>
+
+<h2>退款规则</h2>
+<card-note type="info">
+<p>有效期大于等于 14 天：支持按剩余价值退款。</p>
+<p>有效期小于 14 天：支持折半转成按量付费额度。</p>
+<p>常规退款统一收 20% 手续费，手续费超过 100 元按 100 元计。</p>
+</card-note>
+
+<card-note type="warning">
+<p>常规规则是尽可能解决用户问题、留住用户、不走退款。</p>
+<p>可引导用户转按量付费（永久有效，随时可用）。</p>
+<p>实在解决不了或用户闹事的，再沟通退款。</p>
+</card-note>
+
+<h2>操作步骤</h2>
+
+<card-collapse title="步骤一：询问退款原因">
+<p>话术：<code>您是什么原因要退款呢？</code></p>
+<card-label label="注意"/>
+<ul>
+<li>如果是使用问题，先发群里确认是否可以帮用户解决</li>
+<li>订阅用户可引导按 50% 规则转按量付费</li>
+<li>退款原因要记录到周报</li>
+</ul>
+</card-collapse>
+
+<card-collapse title="步骤二：提交退款材料">
+<p>确认用户退款后，发话术给用户收集以下材料：</p>
+<p>话术：<code>这样，您给我 1. 网站注册账号 2. 订阅的付款截图（需要能看到日期） 3. 仪表盘截图：https://www.aicodemirror.com/dashboard 4. 邀请返利截图：https://www.aicodemirror.com/dashboard/invite-rewards 5. 您的开票抬头或者邮箱</code></p>
+<p>话术：<code>我们将根据您的用量情况，核算退款金额，请您稍等。退款后会注销账号请您知悉。账号注销后将永久冻结，不能再注册使用。</code></p>
+</card-collapse>
+
+<card-collapse title="步骤三：核算退款金额">
+<p>多选聊天记录，转发大群，简要说明退款原因，请杰哥确认。确认后核算退款金额。</p>
+
+<p><strong>退款计算公式</strong></p>
+<card-codeblock mode="plain">(余额 - 邀请返利) x 充值折扣 - 支付金额 x 0.6%手续费 - 充值金额 x 20%手续费(封顶100) = 应退金额</card-codeblock>
+
+<p>正常退款扣除充值金额 x 0.6% 的支付手续费，然后找主管核对邀请返利扣除方式。</p>
+
+<p><strong>邀请返利扣除规则</strong></p>
+<ol>
+<li>扣除邀请人的邀请奖励积分（邀请奖励账户余额）</li>
+<li>扣除邀请人的奖励积分（按量付费余额）</li>
+<li>扣除被邀请人的（按充值金额 20% 扣除，最高 100）</li>
+</ol>
+<card-label label="注意"/>
+<ul>
+<li>退款金额在 100 以内不要扣被邀请人的</li>
+<li>如果用户反应大就不扣</li>
+<li>用户本身有邀请返利也需要扣除（计算转入钱包的金额，没有转入则不计算）</li>
+</ul>
+
+<p><strong>计算示例</strong></p>
+<card-note type="info">
+<p>用户余额为 1000，参与邀请返利，充值折扣 0.75：</p>
+<p>退款金额 = (1000 - 邀请返利) x 0.75 - 支付手续费 = 750 - 1259 x 0.2 = 498.2</p>
+<p>邀请返利有就扣除，没有则不扣除。</p>
+</card-note>
+</card-collapse>
+
+<card-collapse title="步骤四：检查作废发票">
+<p>检查用户是否有发票需要作废。作废后按照实际使用金额重新登记开票。</p>
+<card-label label="注意"/>
+<p>不要直接问是否开过发票。拿到开票信息后查询系统开票情况，再告知用户会作废并重新开具。</p>
+<p>话术：<code>您好，麻烦您告诉我下您的开票信息：抬头，收发票的邮箱哈</code></p>
+</card-collapse>
+
+<card-collapse title="步骤五：登记周报退款">
+<p>登记退款记录到周报。</p>
+<card-image src="https://cdn.nlark.com/yuque/0/2026/png/523194/1770882309717-ab48e366-7ea9-44af-a94e-ee7ecb5e4b2d.png" name="周报退款登记示例"/>
+<p>用户确认后，请用户添加阿飞企业微信退款。</p>
+<p>话术：<code>确认金额无误后请加企业微信，为您返款。</code></p>
+<card-image src="https://cdn.nlark.com/yuque/0/2026/jpeg/523194/1778909325863-afeed556-fc02-4d18-97d4-eb1fbc6b7d6e.jpeg" name="企业微信添加示例"/>
+</card-collapse>
+
+<card-collapse title="步骤六：提交阿滨打款">
+<p>请用户提交注册手机号，检查周报，确认退款金额，给用户打款。打款完毕后更新周报记录。</p>
+<card-image src="https://cdn.nlark.com/yuque/0/2026/png/523194/1770882325630-917f2452-3f1b-4d6b-b5f3-35aa6616df02.png" name="打款记录示例"/>
+</card-collapse>
+
+<card-collapse title="步骤七：退款完毕，提交阿飞注销账号">
+<p>在客服 88888 群提交注销账号。</p>
+<p>话术：<code>15810032255 退款完毕，请注销账号。</code></p>
+<card-image src="https://cdn.nlark.com/yuque/0/2026/png/523194/1770882388716-30a6a65e-9936-47d3-9354-ed2f49ef745b.png" name="注销账号话术示例"/>
+
+<p><strong>注销账号操作</strong></p>
+<ol>
+<li>登录管理后台 <a href="https://admin.aicodemirror.com/anthropic/management">https://admin.aicodemirror.com/anthropic/management</a>，在【用户管理】页面输入用户手机号</li>
+<li>查询到用户后，先冻结账号</li>
+<li>选择删除账号，并在弹出提示确定</li>
+<li>重新输入用户手机号，查询确认（没有找到匹配的用户），注销成功</li>
+</ol>
+<card-image src="https://cdn.nlark.com/yuque/0/2026/png/523194/1778909459116-e9497ff6-42d4-4d40-98ed-383371349a72.png" name="步骤1：用户管理查询"/>
+<card-image src="https://cdn.nlark.com/yuque/0/2026/png/523194/1778909498739-c9451741-87f8-4f4a-834b-02cceefe7425.png" name="步骤2：冻结账号"/>
+<card-image src="https://cdn.nlark.com/yuque/0/2026/png/523194/1778909521534-c20ce23f-44b6-4f91-b845-ad3152776d93.png" name="步骤3：删除账号"/>
+<card-image src="https://cdn.nlark.com/yuque/0/2026/png/523194/1778909542132-cd6bf073-13cc-4f23-b200-6a8d4a56f141.png" name="步骤4：确认注销成功"/>
+</card-collapse>
+
+<card-collapse title="步骤八：汇总退款金额，找张总报销">
+<p>按照周或者累计金额，核算总退款金额，找张总报销。</p>
+</card-collapse>
+
+<card-collapse title="步骤九：按周分析优化">
+<ol>
+<li>分析本周退款条数和原因，复盘沟通过程</li>
+<li>明确用户退款根本原因和诉求，寻求对应优化方案，降低后续该原因退款</li>
+</ol>
+</card-collapse>
+
+<h2>Check List</h2>
+<card-note type="success">
+<ul>
+<li>确认退款金额计算无误</li>
+<li>确认已登记的发票作废完成</li>
+<li>确认账号注销</li>
+</ul>
+</card-note>
+
+<h2>修订记录</h2>
+<table><tbody>
+<tr><td>v1.0</td><td>2026-05-07</td><td>初始版本</td></tr>
+</tbody></table>

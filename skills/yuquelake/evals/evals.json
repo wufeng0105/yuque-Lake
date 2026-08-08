@@ -1,0 +1,23 @@
+{
+  "skill_name": "yuquelake",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "帮我把这份退款SOP文档转成语雀Lake格式，我需要导入到知识库里。文档内容是一份Markdown格式的操作流程，包含退款条件判断、多个操作步骤、客服话术和金额计算公式。",
+      "expected_output": "生成一个 .lake 文件，包含：<!doctype lake> 头部、<h1>标题、<h2>章节、<alert>提示框、<table>参数对照表、<card-codeblock>代码块、<collapse>折叠步骤详情、任务清单 <card-checkbox>、<card-hr/> 分割线。文档结构符合 SOP 类型：目的→范围→定义→职责→操作步骤→注意事项→Check List→修订记录。",
+      "files": ["验证文档集/退款SOP.md"]
+    },
+    {
+      "id": 2,
+      "prompt": "我有一篇技术博客文章想转成语雀的Lake格式，文章讲的是微服务架构设计，里面有架构图的Mermaid代码、一段Python示例代码、一个对比表格，还有一些数学公式。",
+      "expected_output": "生成一个 .lake 文件，包含 <card-diagram type=\"mermaid\"> 架构图、<card-codeblock mode=\"python\"> 代码块、<table> 对比表、<card-math> 数学公式、标准 h2/h3 标题层级。文档结构符合技术文档类型。",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "这是一份API接口文档，请转换为Lake格式导入语雀。包含接口列表、请求参数表格、响应示例JSON代码块、错误码对照表。",
+      "expected_output": "生成一个 .lake 文件，包含 <table> 参数表和错误码表、<card-codeblock mode=\"json\"> 响应示例、<h2> 按接口分组、<h3> 请求/响应/错误码分节。文档结构符合 API 文档类型。",
+      "files": ["验证文档集/退款SOP.md"]
+    }
+  ]
+}

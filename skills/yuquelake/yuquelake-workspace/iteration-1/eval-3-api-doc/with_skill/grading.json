@@ -1,0 +1,16 @@
+{
+  "eval_id": 3,
+  "eval_name": "api-doc-payment",
+  "results": [
+    {"text": "文件以 <!doctype lake> 开头", "passed": true, "evidence": "Found at start"},
+    {"text": "包含 <title> 标签", "passed": true, "evidence": "<title>支付服务 API 文档</title>"},
+    {"text": "包含 4 个 <meta> 标签", "passed": true, "evidence": "All 4 meta tags present"},
+    {"text": "包含 codeblock card (json)", "passed": true, "evidence": "name=\"codeblock\" with mode=json"},
+    {"text": "包含 diagram card (mermaid sequence)", "passed": true, "evidence": "name=\"diagram\" with sequenceDiagram"},
+    {"text": "包含 hr card", "passed": true, "evidence": "name=\"hr\" found"},
+    {"text": "包含多个 table (3个)", "passed": true, "evidence": "Interface list + params + error codes"},
+    {"text": "无残留伪标签", "passed": true, "evidence": "No card- prefix found"},
+    {"text": "所有 card value 以 data: 开头", "passed": true, "evidence": "All card values start with data:"}
+  ],
+  "summary": "9/9 passed"
+}

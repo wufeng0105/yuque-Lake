@@ -1,0 +1,485 @@
+{
+  "$schema": "pseudo-tag-to-lake-syntax-mapping",
+  "$version": "2.0",
+  "$description": "伪标签到真实 Lake 语法的映射表。转换脚本（第4步）读取此文件，将第3步产出的伪标签 HTML 转换为真实 .lake 文件。",
+  "$notes": [
+    "所有 JSON 对象中的 id 字段由脚本自动生成（5字符随机字符串）",
+    "所有 URL 编码使用 encodeURIComponent",
+    "data-lake-id 和 id 属性由脚本自动为每个元素生成",
+    "所有文本由脚本自动用 <span data-lake-id id> 包裹"
+  ],
+
+  "documentHeader": {
+    "doctype": "<!doctype lake>",
+    "meta": [
+      "<title>{title}</title>",
+      "<meta name=\"doc-version\" content=\"1\" />",
+      "<meta name=\"viewport\" content=\"fixed\" />",
+      "<meta name=\"typography\" content=\"classic\" />",
+      "<meta name=\"paragraphSpacing\" content=\"relax\" />"
+    ]
+  },
+
+  "cards": {
+    "codeblock": {
+      "pseudoTag": "card-codeblock",
+      "cardType": "inline",
+      "cardName": "codeblock",
+      "attributes": {
+        "mode": { "required": true, "type": "string", "description": "语言：python, javascript, sql, bash, go, rust, json, yaml, diff, plain" }
+      },
+      "contentField": "code",
+      "jsonTemplate": {
+        "search": "",
+        "hideToolbar": true,
+        "mode": "{mode}",
+        "code": "{content}",
+        "heightLimit": true,
+        "id": "{autoId}"
+      },
+      "examples": [
+        {
+          "pseudo": "<card-codeblock mode=\"python\">print(\"hello\")</card-codeblock>",
+          "realJson": { "search": "", "hideToolbar": true, "mode": "python", "code": "print(\"hello\")", "heightLimit": true, "id": "c9HaJ" }
+        }
+      ]
+    },
+
+    "image": {
+      "pseudoTag": "card-image",
+      "cardType": "inline",
+      "cardName": "image",
+      "attributes": {
+        "src": { "required": true, "type": "string", "description": "图片 URL" },
+        "link": { "required": false, "type": "string", "description": "点击图片跳转的 URL" },
+        "name": { "required": false, "type": "string", "description": "图片说明文字" }
+      },
+      "contentField": null,
+      "jsonTemplate": {
+        "src": "{src}",
+        "linkTarget": "",
+        "title": "{name|null}",
+        "crop": [0, 0, 1, 1],
+        "id": "{autoId}"
+      },
+      "jsonTemplateWithLink": {
+        "src": "{src}",
+        "link": "{link}",
+        "linkTarget": "",
+        "title": "{name|null}",
+        "crop": [0, 0, 1, 1],
+        "id": "{autoId}"
+      },
+      "examples": [
+        {
+          "pseudo": "<card-image src=\"https://example.com/a.png\"></card-image>",
+          "realJson": { "src": "https://example.com/a.png", "linkTarget": "", "title": null, "crop": [0, 0, 1, 1], "id": "afHYG" }
+        },
+        {
+          "pseudo": "<card-image src=\"https://example.com/a.png\" link=\"https://yuque.com\"></card-image>",
+          "realJson": { "src": "https://example.com/a.png", "link": "https://yuque.com", "linkTarget": "", "title": null, "crop": [0, 0, 1, 1], "id": "Qy2wO" }
+        }
+      ]
+    },
+
+    "math": {
+      "pseudoTag": "card-math",
+      "cardType": "inline",
+      "cardName": "math",
+      "attributes": {
+        "code": { "required": true, "type": "string", "description": "LaTeX 公式代码" }
+      },
+      "contentField": null,
+      "jsonTemplate": {
+        "code": "{code}",
+        "id": "{autoId}"
+      },
+      "examples": [
+        {
+          "pseudo": "<card-math code=\"E = mc^2\"></card-math>",
+          "realJson": { "code": "E = mc^2", "id": "lNf9G" }
+        }
+      ]
+    },
+
+    "hr": {
+      "pseudoTag": "card-hr",
+      "cardType": "block",
+      "cardName": "hr",
+      "selfClosing": true,
+      "attributes": {},
+      "contentField": null,
+      "jsonTemplate": {
+        "id": "{autoId}"
+      },
+      "examples": [
+        {
+          "pseudo": "<card-hr/>",
+          "realJson": { "id": "NLJ29" }
+        }
+      ]
+    },
+
+    "diagram": {
+      "pseudoTag": "card-diagram",
+      "cardType": "block",
+      "cardName": "diagram",
+      "attributes": {
+        "type": { "required": true, "type": "string", "enum": ["mermaid", "puml"], "description": "mermaid 或 puml" }
+      },
+      "contentField": "code",
+      "jsonTemplate": {
+        "type": "{type}",
+        "code": "{content}",
+        "id": "{autoId}"
+      },
+      "examples": [
+        {
+          "pseudo": "<card-diagram type=\"mermaid\">graph TD\n    A --> B</card-diagram>",
+          "realJson": { "type": "mermaid", "code": "graph TD\n    A --> B", "id": "JsAPu" }
+        },
+        {
+          "pseudo": "<card-diagram type=\"puml\">@startuml\nAlice -> Bob: Hello\n@enduml</card-diagram>",
+          "realJson": { "type": "puml", "code": "@startuml\nAlice -> Bob: Hello\n@enduml", "id": "MsBYn" }
+        }
+      ]
+    },
+
+    "checkbox": {
+      "pseudoTag": "card-checkbox",
+      "cardType": "inline",
+      "cardName": "checkbox",
+      "selfClosing": true,
+      "attributes": {
+        "checked": { "required": true, "type": "boolean", "description": "true 或 false" }
+      },
+      "contentField": null,
+      "valueEncoding": "direct",
+      "valueTemplate": "data:{checked}",
+      "examples": [
+        {
+          "pseudo": "<card-checkbox checked=\"false\"/>",
+          "realValue": "data:false"
+        },
+        {
+          "pseudo": "<card-checkbox checked=\"true\"/>",
+          "realValue": "data:true"
+        }
+      ],
+      "usageNote": "需放在 <li class=\"lake-list-node lake-list-task\"> 内使用"
+    },
+
+    "label": {
+      "pseudoTag": "card-label",
+      "cardType": "inline",
+      "cardName": "label",
+      "attributes": {
+        "text": { "required": true, "type": "string", "description": "标签文本" },
+        "color": { "required": true, "type": "integer", "description": "颜色索引数字（0-5+）" }
+      },
+      "contentField": null,
+      "jsonTemplate": {
+        "label": "{text}",
+        "colorIndex": "{color}",
+        "id": "{autoId}"
+      },
+      "examples": [
+        {
+          "pseudo": "<card-label text=\"重要\" color=\"2\"/>",
+          "realJson": { "label": "重要", "colorIndex": 2, "id": "wb77k" }
+        }
+      ]
+    },
+
+    "file": {
+      "pseudoTag": "card-file",
+      "cardType": "inline",
+      "cardName": "file",
+      "attributes": {
+        "src": { "required": true, "type": "string", "description": "文件 URL" },
+        "name": { "required": true, "type": "string", "description": "文件名" },
+        "ext": { "required": false, "type": "string", "description": "扩展名" },
+        "size": { "required": false, "type": "integer", "description": "文件大小（字节）" }
+      },
+      "contentField": null,
+      "jsonTemplate": {
+        "src": "{src}",
+        "name": "{name}",
+        "size": "{size|0}",
+        "ext": "{ext|}",
+        "source": "",
+        "status": "done",
+        "download": true,
+        "type": "{mimeType|application/octet-stream}",
+        "id": "{autoId}"
+      },
+      "examples": [
+        {
+          "pseudo": "<card-file src=\"https://example.com/report.pdf\" name=\"季度报告.pdf\" ext=\"pdf\" size=\"1024\"></card-file>",
+          "realJson": { "src": "https://example.com/report.pdf", "name": "季度报告.pdf", "size": 1024, "ext": "pdf", "source": "", "status": "done", "download": true, "type": "application/pdf", "id": "uba7826fa" }
+        }
+      ]
+    },
+
+    "dateCard": {
+      "pseudoTag": "card-date",
+      "cardType": "inline",
+      "cardName": "dateCard",
+      "attributes": {
+        "timestamp": { "required": true, "type": "integer", "description": "Unix 毫秒时间戳" }
+      },
+      "contentField": null,
+      "jsonTemplate": {
+        "date": "{timestamp}",
+        "id": "{autoId}"
+      },
+      "examples": [
+        {
+          "pseudo": "<card-date timestamp=\"1786195371446\"/>",
+          "realJson": { "date": 1786195371446, "id": "gvQI7" }
+        }
+      ]
+    },
+
+    "calendar": {
+      "pseudoTag": "card-calendar",
+      "cardType": "block",
+      "cardName": "calendar",
+      "selfClosing": true,
+      "attributes": {
+        "date": { "required": true, "type": "integer", "description": "YYYYMMDD 格式整数" },
+        "color": { "required": false, "type": "integer", "default": 0, "description": "颜色索引" }
+      },
+      "contentField": null,
+      "jsonTemplate": {
+        "currentDate": "{date}",
+        "colorIndex": "{color|0}",
+        "schedules": {},
+        "id": "{autoId}"
+      },
+      "examples": [
+        {
+          "pseudo": "<card-calendar date=\"20260801\" color=\"0\"/>",
+          "realJson": { "currentDate": 20260801, "colorIndex": 0, "schedules": {}, "id": "U6LqU" }
+        }
+      ]
+    },
+
+    "dataTable": {
+      "pseudoTag": "card-datatable",
+      "cardType": "block",
+      "cardName": "dataTable",
+      "selfClosing": true,
+      "attributes": {},
+      "contentField": null,
+      "jsonTemplate": {
+        "sheetId": "{sheetId}",
+        "docId": "{docId}",
+        "docType": "Doc",
+        "widthMode": "contain",
+        "tableId": "{tableId}",
+        "id": "{autoId}"
+      },
+      "usageNote": "无法通过伪标签从零创建。包含服务端数据（sheetId/docId/tableId）。在编辑器中插入后由系统生成。伪标签仅作为占位符。",
+      "examples": []
+    },
+
+    "board": {
+      "pseudoTag": "card-board",
+      "cardType": "block",
+      "cardName": "board",
+      "selfClosing": true,
+      "attributes": {},
+      "contentField": null,
+      "jsonTemplate": {
+        "diagramData": "{complexObject}",
+        "id": "{autoId}"
+      },
+      "usageNote": "无法通过伪标签从零创建。包含完整的图形数据（坐标、形状、连线）。在编辑器中通过画板工具创建。伪标签仅作为占位符。",
+      "examples": []
+    },
+
+    "yuque": {
+      "pseudoTag": "card-yuque",
+      "cardType": "block",
+      "cardName": "yuque",
+      "attributes": {
+        "src": { "required": true, "type": "string", "description": "语雀文档 URL" },
+        "mode": { "required": true, "type": "string", "enum": ["card", "embed"], "description": "card=卡片预览, embed=嵌入展示" }
+      },
+      "contentField": null,
+      "jsonTemplate": {
+        "mode": "{mode}",
+        "heightMode": "default",
+        "src": "{src}",
+        "url": "{src}?view=doc_embed",
+        "detail": {
+          "image": null,
+          "title": "{title}",
+          "type": "doc",
+          "desc": ""
+        },
+        "id": "{autoId}"
+      },
+      "examples": [
+        {
+          "pseudo": "<card-yuque src=\"https://www.yuque.com/namespace/repo/slug\" mode=\"card\"></card-yuque>",
+          "realJson": { "mode": "card", "heightMode": "default", "src": "https://www.yuque.com/namespace/repo/slug", "url": "https://www.yuque.com/namespace/repo/slug?view=doc_embed", "detail": { "image": null, "title": "", "type": "doc", "desc": "" }, "id": "SQe7t" }
+        }
+      ]
+    }
+  },
+
+  "nonCardStructures": {
+    "alert": {
+      "pseudoTag": "alert",
+      "realTag": "blockquote",
+      "cssClass": "lake-alert lake-alert-{type}",
+      "attributes": {
+        "type": { "required": true, "type": "string", "enum": ["info", "warning", "color2"], "description": "提示框类型" }
+      },
+      "htmlTemplate": "<blockquote class=\"lake-alert lake-alert-{type}\">{content}</blockquote>",
+      "examples": [
+        {
+          "pseudo": "<alert type=\"warning\">注意：此操作不可逆。</alert>",
+          "real": "<blockquote class=\"lake-alert lake-alert-warning\"><p><span>注意：此操作不可逆。</span></p></blockquote>"
+        }
+      ]
+    },
+
+    "collapse": {
+      "pseudoTag": "collapse",
+      "realTag": "details",
+      "cssClass": "lake-collapse",
+      "attributes": {
+        "title": { "required": true, "type": "string", "description": "折叠面板标题" },
+        "open": { "required": false, "type": "boolean", "default": false, "description": "是否默认展开" }
+      },
+      "htmlTemplate": "<details class=\"lake-collapse\" open=\"{open}\"><summary class=\"lake-summary\">{title}</summary>{content}</details>",
+      "examples": [
+        {
+          "pseudo": "<collapse title=\"点击展开\" open=\"false\"><p>折叠内容</p></collapse>",
+          "real": "<details class=\"lake-collapse\" open=\"false\"><summary class=\"lake-summary\">点击展开</summary><p><span>折叠内容</span></p></details>"
+        }
+      ]
+    },
+
+    "columns": {
+      "pseudoTag": "columns",
+      "realTag": "article",
+      "cssClass": "lake-columns",
+      "childTag": "column",
+      "childCssClass": "lake-column-item",
+      "attributes": {},
+      "childAttributes": {
+        "width": { "required": true, "type": "string", "description": "列宽百分比，如 40%" }
+      },
+      "htmlTemplate": "<article class=\"lake-columns\">{columns}</article>",
+      "childHtmlTemplate": "<article class=\"lake-column-item\" style=\"width: {width}\">{content}</article>",
+      "examples": [
+        {
+          "pseudo": "<columns><column width=\"40%\"><p>左栏</p></column><column width=\"60%\"><p>右栏</p></column></columns>",
+          "real": "<article class=\"lake-columns\"><article class=\"lake-column-item\" style=\"width: 40.000000%\"><p><span>左栏</span></p></article><article class=\"lake-column-item\" style=\"width: 60.000000%\"><p><span>右栏</span></p></article></article>"
+        }
+      ]
+    },
+
+    "inlineLabel": {
+      "pseudoTag": "inline-label",
+      "realTag": "span",
+      "cssClass": "ne-label",
+      "attributes": {
+        "text": { "required": true, "type": "string", "description": "标签文本" },
+        "color": { "required": true, "type": "integer", "description": "颜色索引数字" }
+      },
+      "htmlTemplate": "<span data-color=\"{color}\" class=\"ne-label\">{text}</span>",
+      "examples": [
+        {
+          "pseudo": "<inline-label text=\"必要条件\" color=\"4\"/>",
+          "real": "<span data-color=\"4\" class=\"ne-label\">必要条件</span>"
+        }
+      ]
+    }
+  },
+
+  "standardHtmlTags": {
+    "headings": {
+      "tags": ["h1", "h2", "h3", "h4", "h5", "h6"],
+      "autoAttributes": ["data-lake-id", "id"],
+      "textWrapping": "span"
+    },
+    "paragraph": {
+      "tags": ["p"],
+      "autoAttributes": ["data-lake-id", "id"],
+      "textWrapping": "span",
+      "supportedStyles": ["text-align"]
+    },
+    "inlineFormats": {
+      "strong": { "textWrapping": "span" },
+      "em": { "textWrapping": "span" },
+      "del": { "textWrapping": "span" },
+      "u": { "textWrapping": "span" },
+      "code": { "autoAttributes": ["data-lake-id", "id"], "textWrapping": "span" },
+      "sup": { "textWrapping": "span" },
+      "sub": { "textWrapping": "span" }
+    },
+    "link": {
+      "tag": "a",
+      "autoAttributes": ["data-lake-id", "id", "target=\"_blank\""],
+      "textWrapping": "span"
+    },
+    "blockquote": {
+      "tag": "blockquote",
+      "autoAttributes": ["data-lake-id", "id"],
+      "textWrapping": "span"
+    },
+    "table": {
+      "tag": "table",
+      "autoAttributes": ["data-lake-id", "id", "class=\"lake-table\""],
+      "requiredChildren": ["colgroup", "tbody"],
+      "forbiddenChildren": ["thead"],
+      "cellContentWrapping": "p",
+      "supportedCellStyles": ["background-color", "colSpan"]
+    },
+    "list": {
+      "tags": ["ul", "ol"],
+      "autoAttributes": ["data-lake-id", "id", "list=\"{autoListId}\""],
+      "splitRule": "each-li-in-separate-ul-or-ol",
+      "indentAttribute": "data-lake-indent",
+      "taskListClass": "lake-list",
+      "taskItemClass": "lake-list-node lake-list-task"
+    },
+    "textStyles": {
+      "highlight": "style=\"background-color: {color}\"",
+      "textColor": "style=\"color: {color}\"",
+      "textColorWithBg": "style=\"color: {color}; background-color: {bgColor}\""
+    }
+  },
+
+  "conversionRules": {
+    "idGeneration": {
+      "format": "5-char alphanumeric",
+      "charset": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+      "examples": ["c9HaJ", "afHYG", "NLJ29", "JsAPu"]
+    },
+    "urlEncoding": {
+      "method": "encodeURIComponent",
+      "prefix": "data:",
+      "process": "JSON.stringify -> encodeURIComponent -> prepend 'data:'"
+    },
+    "textWrapping": {
+      "rule": "All text nodes must be wrapped in <span data-lake-id=\"{id}\" id=\"{id}\">",
+      "scope": "All elements including p, h1-h6, td, li, blockquote, strong, em, etc."
+    },
+    "listSplitting": {
+      "rule": "Each <li> must be in its own <ul>/<ol>, linked by 'list' attribute",
+      "process": "Generate unique listId for each group -> Split <li> into separate <ul list=\"listId\"> -> Add data-lake-indent for nesting"
+    },
+    "escaping": {
+      "lt": "&lt;",
+      "gt": "&gt;",
+      "amp": "&amp;",
+      "quot": "&quot;"
+    }
+  }
+}

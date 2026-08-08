@@ -1,0 +1,48 @@
+<h1>微服务架构设计</h1>
+
+<h2>架构概览</h2>
+<p>本文档描述系统的微服务架构设计，采用领域驱动设计（DDD）方法拆分服务边界。</p>
+
+<h2>架构图</h2>
+<card-diagram type="mermaid">
+graph TD
+    A[API Gateway] --> B[用户服务]
+    A --> C[订单服务]
+    A --> D[支付服务]
+    B --> E[(用户库)]
+    C --> F[(订单库)]
+    D --> G[(支付库)]
+</card-diagram>
+
+<h2>服务对比</h2>
+<table>
+<colgroup><col width="150"><col width="150"><col width="150"><col width="150"></colgroup>
+<tbody>
+<tr><td>服务名</td><td>技术栈</td><td>数据库</td><td>部署方式</td></tr>
+<tr><td>用户服务</td><td>Go + Gin</td><td>PostgreSQL</td><td>K8s</td></tr>
+<tr><td>订单服务</td><td>Java + Spring</td><td>MySQL</td><td>K8s</td></tr>
+<tr><td>支付服务</td><td>Python + FastAPI</td><td>PostgreSQL</td><td>Docker</td></tr>
+</tbody>
+</table>
+
+<h2>核心算法示例</h2>
+<card-codeblock mode="python">
+def calculate_refund(balance, rebate, discount=0.75):
+    """计算退款金额"""
+    base = (balance - rebate) * discount
+    fee = min(balance * 0.2, 100)
+    return base - fee
+
+result = calculate_refund(1000, 0)
+print(f"退款金额: {result}")
+</card-codeblock>
+
+<h2>性能公式</h2>
+<p>系统吞吐量计算：</p>
+<p style="text-align: center"><card-math code="T = \frac{N \times Q}{D \times 1000}"></card-math></p>
+<p>其中 T 为吞吐量（req/s），N 为节点数，Q 为单节点 QPS，D 为延迟（ms）。</p>
+
+<card-hr/>
+
+<h2>部署拓扑</h2>
+<p>采用 Kubernetes 集群部署，每个微服务独立命名空间。</p>

@@ -1,0 +1,47 @@
+<!doctype lake><title>支付服务 API 文档</title><meta name="doc-version" content="1" /><meta name="viewport" content="fixed" /><meta name="typography" content="classic" /><meta name="paragraphSpacing" content="relax" /><h1>支付服务 API 文档</h1>
+
+<h2>接口总览</h2>
+<table>
+<colgroup><col width="100"><col width="200"><col width="100"><col width="200"></colgroup>
+<tbody>
+<tr><td>方法</td><td>路径</td><td>认证</td><td>说明</td></tr>
+<tr><td>POST</td><td>/api/v1/payments</td><td>Bearer Token</td><td>创建支付订单</td></tr>
+<tr><td>GET</td><td>/api/v1/payments/:id</td><td>Bearer Token</td><td>查询支付状态</td></tr>
+<tr><td>POST</td><td>/api/v1/refunds</td><td>Bearer Token</td><td>发起退款</td></tr>
+</tbody>
+</table>
+
+<h2>创建支付订单</h2>
+
+<h3>请求参数</h3>
+<table>
+<colgroup><col width="150"><col width="100"><col width="80"><col width="270"></colgroup>
+<tbody>
+<tr><td>参数名</td><td>类型</td><td>必填</td><td>说明</td></tr>
+<tr><td>amount</td><td>number</td><td>是</td><td>支付金额（分）</td></tr>
+<tr><td>currency</td><td>string</td><td>是</td><td>币种（CNY/USD）</td></tr>
+<tr><td>method</td><td>string</td><td>是</td><td>支付方式（alipay/wechat/bank）</td></tr>
+<tr><td>order_id</td><td>string</td><td>是</td><td>商户订单号</td></tr>
+<tr><td>notify_url</td><td>string</td><td>否</td><td>回调通知地址</td></tr>
+</tbody>
+</table>
+
+<h3>响应示例</h3>
+<card type="inline" name="codeblock" value="data:%7B%22search%22%3A%22%22%2C%22hideToolbar%22%3Atrue%2C%22mode%22%3A%22json%22%2C%22code%22%3A%22%5Cn%7B%5Cn%20%20%5C%22code%5C%22%3A%200%2C%5Cn%20%20%5C%22data%5C%22%3A%20%7B%5Cn%20%20%20%20%5C%22payment_id%5C%22%3A%20%5C%22pay_202608081234%5C%22%2C%5Cn%20%20%20%20%5C%22status%5C%22%3A%20%5C%22pending%5C%22%2C%5Cn%20%20%20%20%5C%22amount%5C%22%3A%2010000%2C%5Cn%20%20%20%20%5C%22currency%5C%22%3A%20%5C%22CNY%5C%22%2C%5Cn%20%20%20%20%5C%22method%5C%22%3A%20%5C%22alipay%5C%22%2C%5Cn%20%20%20%20%5C%22created_at%5C%22%3A%20%5C%222026-08-08T14%3A00%3A00Z%5C%22%5Cn%20%20%7D%5Cn%7D%5Cn%22%2C%22heightLimit%22%3Atrue%2C%22id%22%3A%22hwyjc%22%7D"></card>
+
+<h2>错误码</h2>
+<table>
+<colgroup><col width="120"><col width="180"><col width="350"></colgroup>
+<tbody>
+<tr><td>错误码</td><td>含义</td><td>说明</td></tr>
+<tr><td>40001</td><td>INVALID_PARAM</td><td>请求参数错误</td></tr>
+<tr><td>40003</td><td>UNAUTHORIZED</td><td>认证失败或 token 过期</td></tr>
+<tr><td>40901</td><td>DUPLICATE_ORDER</td><td>订单号重复</td></tr>
+<tr><td>50001</td><td>SYSTEM_ERROR</td><td>系统内部错误</td></tr>
+</tbody>
+</table>
+
+<card type="block" name="hr" value="data:%7B%22id%22%3A%22rFF6I%22%7D"></card>
+
+<h2>认证流程</h2>
+<card type="block" name="diagram" value="data:%7B%22type%22%3A%22mermaid%22%2C%22code%22%3A%22%5CnsequenceDiagram%5Cn%20%20%20%20participant%20C%20as%20Client%5Cn%20%20%20%20participant%20A%20as%20Auth%20Server%5Cn%20%20%20%20participant%20P%20as%20Payment%20Service%5Cn%20%20%20%20C-%3E%3EA%3A%20POST%20%2Fauth%2Ftoken%20%28key%20%2B%20secret%29%5Cn%20%20%20%20A--%3E%3EC%3A%20access_token%20%282h%29%5Cn%20%20%20%20C-%3E%3EP%3A%20POST%20%2Fpayments%20%28Bearer%20token%29%5Cn%20%20%20%20P--%3E%3EC%3A%20payment_id%5Cn%22%2C%22id%22%3A%228vKE9%22%7D"></card>

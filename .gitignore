@@ -24,3 +24,11 @@ desktop.ini
 *.tmp
 *.log
 .temp/
+
+# Skill development workspace (test outputs, grading, eval viewer)
+skills/*/yuquelake-workspace/
+
+# Test / development artifacts
+*.pseudo.html
+*-pseudo.html
+验证文档集/

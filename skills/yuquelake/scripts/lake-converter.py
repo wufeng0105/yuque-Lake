@@ -1,12 +1,19 @@
 #!/usr/bin/env python3
 """
-Lake 伪标签转换器 v4
+Lake 伪标签转换器 v4.1
 
 基于真实 .lake 样本验证的语法映射，支持：
 - 13 种 Card 伪标签（codeblock, image, math, hr, diagram, checkbox, label, file, date, calendar, datatable, board, yuque）
 - 4 种非 Card 伪标签（alert, collapse, columns, inline-label）
 - 文档头部自动生成（<!doctype lake> + <title> + 4 个 <meta>）
 - ID 自动生成（5字符随机）
+
+v4.1 修复：
+- Bug: 内容 Card 无属性时不匹配（<card-codeblock>code</card-codeblock>）
+- Bug: 自闭合内容 Card 不处理（<card-image src="url"/>）
+- Bug: Yuque card URL 拼接不处理已有查询参数
+- 改进: collapse 转换从 O(n²) 改为 O(n)（用 finditer + reversed）
+- 改进: 内容 Card 嵌套检查不再误判文本中的 <card- 字符串
 
 用法：
     python lake-converter.py input.html output.lake --title "文档标题"
@@ -20,7 +27,7 @@ import json
 import random
 import string
 import argparse
-from urllib.parse import quote
+from urllib.parse import quote, urlencode
 
 
 def gen_id():
@@ -150,7 +157,7 @@ CONTENT_CARDS = {
             'mode': attrs.get('mode', 'card'),
             'heightMode': 'default',
             'src': attrs.get('src', ''),
-            'url': f"{attrs.get('src', '')}?view=doc_embed",
+            'url': _build_yuque_url(attrs.get('src', '')),
             'detail': {
                 'image': None,
                 'title': attrs.get('title', ''),
@@ -175,6 +182,15 @@ def _build_image_json(attrs):
     if attrs.get('link'):
         data['link'] = attrs['link']
     return data
+
+
+def _build_yuque_url(src):
+    """构建语雀嵌入 URL，处理已有查询参数"""
+    if not src:
+        return ''
+    if '?' in src:
+        return f"{src}&view=doc_embed"
+    return f"{src}?view=doc_embed"
 
 
 def _guess_mime(ext):
@@ -304,7 +320,8 @@ def make_card_raw_value(card_name, card_type, value):
 # ========== 转换逻辑 ==========
 
 def convert_self_closing_cards(html):
-    """转换自闭合 Card 伪标签"""
+    """转换自闭合 Card 伪标签（包括 SELF_CLOSING_CARDS 和 CONTENT_CARDS 的自闭合形式）"""
+    # 1. 处理 SELF_CLOSING_CARDS
     for pseudo_name, config in SELF_CLOSING_CARDS.items():
         # 带属性的: <card-xxx attr="val" />
         pattern = rf'<card-{pseudo_name}(\s[^>]*?)\s*/>'
@@ -323,6 +340,15 @@ def convert_self_closing_cards(html):
             return make_card(cfg['card_name'], cfg['card_type'], cfg['json']({}))
         html = re.sub(pattern2, repl2, html)
 
+    # 2. 处理 CONTENT_CARDS 的自闭合形式（如 <card-image src="url"/>）
+    for pseudo_name, config in CONTENT_CARDS.items():
+        pattern = rf'<card-{pseudo_name}(\s[^>]*?)\s*/>'
+        def repl3(m, pn=pseudo_name, cfg=config):
+            attrs = parse_attrs(m.group(1) or '')
+            data = cfg['json'](attrs, '')
+            return make_card(cfg['card_name'], cfg['card_type'], data)
+        html = re.sub(pattern, repl3, html)
+
     return html
 
 
@@ -331,14 +357,17 @@ def convert_content_cards(html):
     for _ in range(20):
         changed = False
         for pseudo_name, config in CONTENT_CARDS.items():
-            pattern = rf'<card-{pseudo_name}(\s[^>]*?)>(.*?)</card-{pseudo_name}>'
+            # 修复 Bug: 属性组改为可选，支持无属性的 <card-codeblock>code</card-codeblock>
+            pattern = rf'<card-{pseudo_name}(\s+[^>]*?)?>(.*?)</card-{pseudo_name}>'
             matches = list(re.finditer(pattern, html, flags=re.DOTALL))
             for m in reversed(matches):
                 content = m.group(2) or ''
-                # 跳过内部还含伪标签的（留到下一趟）
-                if re.search(r'<card-\w+', content):
+                # 改进: 只跳过内部还含「未转换的」伪标签的（而非文本中的 <card- 字符串）
+                # 用正则匹配真正的伪标签开头（<card- 后跟字母，再跟空格或 > 或 />）
+                if re.search(r'<card-\w+(\s[^>]*?)?[/]?>', content):
                     continue
-                attrs = parse_attrs(m.group(1) or '')
+                attrs_str = m.group(1) or ''
+                attrs = parse_attrs(attrs_str)
                 data = config['json'](attrs, content)
                 card = make_card(config['card_name'], config['card_type'], data)
                 html = html[:m.start()] + card + html[m.end():]
@@ -357,36 +386,42 @@ def convert_non_card_tags(html):
         return NON_CARD_TAGS['inline-label']['transform'](attrs, '')
     html = re.sub(pattern, repl_label, html)
 
-    # 处理 alert（带内容）
-    pattern = r'<alert(\s[^>]*?)>(.*?)</alert>'
-    def repl_alert(m):
-        attrs = parse_attrs(m.group(1) or '')
-        content = m.group(2) or ''
-        return NON_CARD_TAGS['alert']['transform'](attrs, content)
-    html = re.sub(pattern, repl_alert, html, flags=re.DOTALL)
-
-    # 处理 collapse（带内容，多趟处理嵌套）
-    for _ in range(10):
-        pattern = r'<collapse(\s[^>]*?)>(.*?)</collapse>'
+    # 处理 alert（带内容，多趟处理嵌套）
+    for _ in range(20):
+        pattern = r'<alert(\s+[^>]*?)?>(.*?)</alert>'
         match = re.search(pattern, html, flags=re.DOTALL)
         if not match:
             break
         content = match.group(2) or ''
-        if re.search(r'<(alert|collapse|columns|inline-label)', content):
-            # 先处理内部的
-            inner_pattern = r'<(alert|collapse)(\s[^>]*?)>(.*?)</\1>'
-            inner_match = re.search(inner_pattern, content, flags=re.DOTALL)
-            if inner_match:
-                continue
+        # 跳过嵌套 alert
+        if re.search(r'<alert(\s+[^>]*?)?>', content):
+            # 先处理内部的（下一轮会找到更内层的）
+            continue
         attrs = parse_attrs(match.group(1) or '')
-        result = NON_CARD_TAGS['collapse']['transform'](attrs, content)
+        result = NON_CARD_TAGS['alert']['transform'](attrs, content)
         html = html[:match.start()] + result + html[match.end():]
+
+    # 处理 collapse（带内容，改进: 用 finditer + reversed，O(n) 效率）
+    for _ in range(20):
+        pattern = r'<collapse(\s+[^>]*?)?>(.*?)</collapse>'
+        matches = list(re.finditer(pattern, html, flags=re.DOTALL))
+        converted = False
+        for m in reversed(matches):
+            content = m.group(2) or ''
+            # 跳过嵌套 collapse（先处理内层）
+            if re.search(r'<collapse(\s+[^>]*?)?>', content):
+                continue
+            attrs = parse_attrs(m.group(1) or '')
+            result = NON_CARD_TAGS['collapse']['transform'](attrs, content)
+            html = html[:m.start()] + result + html[m.end():]
+            converted = True
+        if not converted:
+            break
 
     # 处理 columns（带 column 子标签）
     pattern = r'<columns>(.*?)</columns>'
     def repl_columns(m):
         inner = m.group(1) or ''
-        # 提取所有 column
         col_pattern = r'<column(\s[^>]*?)>(.*?)</column>'
         cols = re.findall(col_pattern, inner, flags=re.DOTALL)
         col_html = ''
@@ -412,7 +447,6 @@ def add_document_header(html, title):
 
     stripped = html.strip()
     if stripped.lower().startswith('<!doctype lake'):
-        # 替换已有的 doctype
         html = re.sub(r'<!doctype lake>\s*(<title>.*?</title>)?', '', html, count=1, flags=re.IGNORECASE)
 
     result = header + html.strip()
@@ -422,7 +456,7 @@ def add_document_header(html, title):
 
 def convert(html, title=None):
     """完整转换流程"""
-    # 1. 转换自闭合 Card
+    # 1. 转换自闭合 Card（含 CONTENT_CARDS 的自闭合形式）
     html = convert_self_closing_cards(html)
     # 2. 转换带内容 Card（多趟）
     html = convert_content_cards(html)
@@ -434,7 +468,7 @@ def convert(html, title=None):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Lake 伪标签转换器 v4')
+    parser = argparse.ArgumentParser(description='Lake 伪标签转换器 v4.1')
     parser.add_argument('input', help='输入 HTML 文件路径')
     parser.add_argument('output', nargs='?', help='输出 .lake 文件路径（不指定则输出到 stdout）')
     parser.add_argument('--title', default=None, help='文档标题')

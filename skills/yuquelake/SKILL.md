@@ -30,26 +30,74 @@ AI 负责内容语义（步骤 0-3），脚本负责机械语法（步骤 4）�
 
 **核心原则**：任何文档的流程第一步永远都是清洗格式，无一例外。不关注输入格式——Markdown、HTML、Lake、TXT、docx 等一律清洗干净。
 
-**规划内容**：用户意图、输入格式、输入规模、文档类型、输出方式。
+**不可变元素清单**：在规划阶段必须先阅读 [knowledge/invariants.md](knowledge/invariants.md)——它定义了所有文档类型通用的内容保全基线。规划表中的内容清点结果将作为后续每个质量门的校验基准。
+
+**规划内容**：用户意图、输入格式、输入规模、文档类型、内容清点（图片×N 链接×N 代码块×N 表格×N 附件×N 数学公式×N 流程图×N 话术×N）、输出方式。
 
 **执行纪律**：每一步的输出必须在对话中显式呈现后才能进入下一步。不允许在脑中完成中间步骤直接跳到下一步。
 
 **质量门**（每步完成后检查再进入下一步，过门必须展示对应产物）：
-- 门 0：输入验证 → 展示规划表
-- 门 1：清洗验证 → 展示清洗后的纯文本
-- 门 2：梳理验证 → 展示结构化大纲（含信息类型标注和信息提取结果）
+- 门 0：输入验证 → 展示规划表（含内容清点）
+- 门 1：清洗验证 → 展示清洗后的纯文本（不可变元素标记数 ≥ 规划表清点数）
+- 门 2：梳理验证 → 展示结构化大纲（每个不可变元素都有对应位置）
 - 门 3：伪代码验证 → 展示伪标签 HTML（必须先完整阅读 card-guide.md）
-- 门 4：输出验证 → 展示验证结果
+- 门 4：输出验证 → 运行 `verify-content.py` 确认输出中不可变元素数量 ≥ 规划表清点数
+
+### 红线规则
+
+以下 6 条不可违反，违反即输出不合格：
+
+1. **不可删除不可变元素**——图片、链接、代码块、表格、附件、公式、流程图、话术、金额。详见 [invariants.md](knowledge/invariants.md)
+2. **Lake 输入不可直接剥离 `<card>` 标签**——`<card>` 是内容载体不是格式标记，必须先解析提取内容。详见 §1a-Lake
+3. **不可删除内容，只能归类**——非核心内容移到附录/折叠面板，不可消失。详见各 document-types/*.md 的"归类"列
+4. **不可跳过质量门**——每步必须展示产物并通过验证才能进入下一步
+5. **不可跳过 Step 0 内容清点**——清点结果是所有后续质量门的校验基准
+6. **不可混杂文档类型**——SOP 不含 API 端点，PRD 不含操作步骤。详见 [methodology.md](knowledge/methodology.md) DITA 约束
 
 ## 第一步：清洗
 
 **目标**：剥离所有格式标记，只保留原始内容 + 位置标记。
 
-**输入**：文本格式的文档（Markdown、HTML、纯文本）。二进制文件需先提取文本。
+**输入**：文本格式的文档（Markdown、HTML、Lake、纯文本）。二进制文件需先提取文本。
 
 ### 1a. 删除（格式标记）
 
 只删格式，不删内容：Markdown 语法（`#`、`**`、`[]()` 等）、HTML 标签（`<div>`、`<span>` 等）、HTML 实体（先解码再删除）、多余空白（连续空格收敛为 1 个、连续空行收敛为 2 个）、控制字符（零宽空格等）。
+
+### 1a-Lake. Lake 格式输入的特殊清洗规则
+
+当输入是 `.lake` 文件时，`<card>` 标签既是格式标记也是内容载体——直接当作 HTML 标签剥离会导致图片、代码、公式等内容全部丢失。Lake 格式的清洗需要先解析 `<card>` 标签，提取其中的内容，再按标准清洗流程处理。
+
+Lake `<card>` 标签结构：`<card type="inline" name="cardName" value="data:URL编码的JSON">`。内容信息封装在 `value` 属性的 URL 编码 JSON 中。清洗时按以下步骤处理：
+
+1. **识别所有 `<card>` 标签**，按 `name` 属性分类
+2. **解码 `value` 属性**：去掉 `data:` 前缀 → `decodeURIComponent` → `JSON.parse`
+3. **按 card 类型提取内容并转为位置标记**：
+
+| Card 类型 | 提取字段 | 转为标记 |
+|-----------|---------|----------|
+| `image` | `src`, `title` | `[IMAGE: src \| title]` |
+| `codeblock` | `mode`, `code` | `[CODE: mode]` code `[END CODE]` |
+| `math` | `code` | `[MATH: code]` |
+| `diagram` | `type`, `code` | `[DIAGRAM: type]` code `[END DIAGRAM]` |
+| `file` | `src`, `name`, `ext` | `[FILE: src \| name \| ext]` |
+| `hr` | — | `[HR]` |
+| `checkbox` | `checked` | `[CHECKBOX: checked]` |
+| `label` | `label`, `colorIndex` | `[LABEL: label \| colorIndex]` |
+| `dateCard` | `date` | `[DATE: timestamp]` |
+| `calendar` | `currentDate` | `[CALENDAR: date]` |
+| `yuque` | `src` | `[LINK: src \| 语雀文档嵌入]` |
+| `datatable` | `sheetId`, `docId` | `[TABLE]` 数据表占位 `[END TABLE]` |
+| `board` | — | `[DIAGRAM: board]` 画板占位 `[END DIAGRAM]` |
+
+4. **用位置标记替换 `<card>` 标签**，然后继续标准清洗流程
+5. **非 Card 的 Lake 特殊结构**也需提取内容：
+   - `<blockquote class="lake-alert">` → 提取类型和内容，标记为 `[ALERT: type]` 内容 `[END ALERT]`
+   - `<details class="lake-collapse">` → 提取标题和内容，标记为 `[COLLAPSE: title]` 内容 `[END COLLAPSE]`
+   - `<article class="lake-columns">` → 提取各列内容，标记为 `[COLUMNS]` 列1内容 `[COL]` 列2内容 `[END COLUMNS]`
+   - `<table class="lake-table">` → 提取所有行数据，标记为 `[TABLE]` 行1\|行2 `[END TABLE]`
+
+这个过程确保 Lake 格式输入中的所有内容载体被正确解析为位置标记，不会在后续清洗中被当作普通 HTML 标签剥离。
 
 ### 1b. 保留（内容 + 位置标记）
 
@@ -63,13 +111,16 @@ AI 负责内容语义（步骤 0-3），脚本负责机械语法（步骤 4）�
 | 列表 | `[LIST: ordered/unordered, level=N]` 项1 项2 `[END LIST]` |
 | 引用 | `[QUOTE: 原文]` |
 | 数学公式 | `[MATH: LaTeX原文]` |
+| 附件 | `[FILE: src \| name \| ext]` |
+| 流程图/图表 | `[DIAGRAM: type]` 代码 `[END DIAGRAM]` |
 
 ### 1c. 验证
 
-- [ ] 图片/链接/代码块数量与原文一致
+- [ ] 图片/链接/代码块/表格/附件/公式/流程图数量与 Step 0 规划表清点一致
 - [ ] 表格行列数完整
 - [ ] 内容顺序与原文一致
 - [ ] 无残留格式标记
+- [ ] **Lake 输入特有**：无残留 `<card>` 标签（所有 card 已转为位置标记）
 
 **原则**：信息宁可多留不可丢失。辅助工具：`python scripts/md-to-lake.py input.md output.html`
 
@@ -106,12 +157,19 @@ AI 负责内容语义（步骤 0-3），脚本负责机械语法（步骤 4）�
 - **Minimalism**：以行动为导向，只保留完成任务所需信息
 - **DITA**：按 Concept/Task/Reference 组织，不混杂内容类型
 
+### 2c. 不可变元素锚定
+
+梳理过程中重组章节、合并段落、调整顺序时，必须为 [invariants.md](knowledge/invariants.md) 中定义的每个不可变元素指定在输出结构中的位置。这叫"锚定"——每个不可变元素都必须在大纲中有一个明确的锚点。
+
+操作方式：遍历 Step 0 内容清点中的每个元素，在梳理后的结构大纲中找到它的归属位置。如果找不到位置，说明该元素在重组中被遗漏了——回头检查是被合并了（允许）还是被删除了（不允许）。
+
 **Gate 2 验证清单**（全部通过才能进入第三步）：
 - [ ] 每个内容块已归类到 Information Mapping 6 种类型之一（Procedure/Process/Principle/Concept/Structure/Fact）
 - [ ] 内容块不混杂类型（DITA 强类型分离——一个内容块不同时是步骤又是概念）
 - [ ] 散乱参数/条件/话术/指标已识别并提取为结构化形式（遵循 card-guide.md 第三部分信息提取规则）
 - [ ] 结构化大纲遵循文档类型的章节骨架
 - [ ] 大纲中无任何伪标签或格式标记
+- [ ] **不可变元素锚定**：Step 0 清点中的每个不可变元素都在大纲中有明确归属位置
 
 **输出**：按文档类型重新组织的结构化内容大纲（纯文本，无任何标签，每个内容块标注信息类型），必须在对话中显式呈现，通过门 2 后再进入第三步。
 
@@ -160,11 +218,13 @@ python scripts/lake-converter.py input.html output.lake --title "文档标题"
 - `<!doctype lake>` 在文件开头
 - 无残留伪标签（搜索 `card-` 前缀，应为 0 个）
 - 所有 `<card>` 标签都有 `name` 和 `value` 属性，`value` 以 `data:` 开头
+- **内容保全校验**：运行 `python scripts/verify-content.py input output.lake`，确认输出中不可变元素数量 ≥ Step 0 规划表清点数。校验脚本返回非零退出码时，必须修正后重新输出。
 
 ## 参考文件
 
 **知识层（AI 读取，做内容决策）**：
 - [knowledge/planning-guide.md](knowledge/planning-guide.md) — 规划流程：需求分析、决策树、质量门
+- [knowledge/invariants.md](knowledge/invariants.md) — 不可变元素清单（内容保全基线，所有文档类型通用）
 - [knowledge/methodology.md](knowledge/methodology.md) — 文档结构化方法论（6 种信息类型、DITA、Minimalism）
 - [knowledge/card-guide.md](knowledge/card-guide.md) — Card 能力目录 + 选择决策指南
 - [knowledge/document-types/](knowledge/document-types/) — 10 种文档类型写作指南
@@ -174,5 +234,7 @@ python scripts/lake-converter.py input.html output.lake --title "文档标题"
 - [reference/lakebook.md](reference/lakebook.md) — .lakebook 打包结构
 
 **执行层（AI 不读，脚本自动加载）**：
-- [scripts/lake-converter.py](scripts/lake-converter.py) — 伪标签转换脚本（内部加载 tag-mapping.json）
+- [scripts/lake-converter.py](scripts/lake-converter.py) — 伪标签转换脚本
 - [scripts/md-to-lake.py](scripts/md-to-lake.py) — Markdown 转伪标签 HTML 脚本
+- [scripts/verify-content.py](scripts/verify-content.py) — 内容保全校验脚本（比对输入输出中不可变元素数量）
+- [reference/tag-mapping.json](reference/tag-mapping.json) — 伪标签→Lake 语法映射表（由 lake-converter.py 加载，位于 reference/ 但属执行层）

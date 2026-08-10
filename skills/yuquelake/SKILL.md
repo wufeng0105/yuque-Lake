@@ -99,8 +99,6 @@ Lake `<card>` 标签结构：`<card type="inline" name="cardName" value="data:UR
 
 这个过程确保 Lake 格式输入中的所有内容载体被正确解析为位置标记，不会在后续清洗中被当作普通 HTML 标签剥离。
 
-**辅助工具**：`python scripts/lake-extract.py input.lake output.txt` — 自动化上述解码和提取过程，输出位置标记纯文本。
-
 ### 1b. 保留（内容 + 位置标记）
 
 | 保留类型 | 标记格式 |
@@ -116,9 +114,20 @@ Lake `<card>` 标签结构：`<card type="inline" name="cardName" value="data:UR
 | 附件 | `[FILE: src \| name \| ext]` |
 | 流程图/图表 | `[DIAGRAM: type]` 代码 `[END DIAGRAM]` |
 
+### 1b-补. 纯文本 URL 扫描
+
+链接不只指数 `<a href>` 标签和 `<card name="yuque">` 嵌入。正文中以 `http://` 或 `https://` 开头的**纯文本 URL** 也是链接，必须保留。这类 URL 常见于从其他文档复制粘贴时遗留的裸链接（如语雀文档地址、外部系统地址）。
+
+清洗时，除了 `lake-extract.py` 自动识别的 `<a href>` 和 `<card>` 标签链接外，AI 还必须：
+1. **在 Step 0 内容清点时主动扫描提取结果中的纯文本 URL**（以 `http://` 或 `https://` 开头的文本行），计入链接数量
+2. **在 Step 1 清洗时为纯文本 URL 添加 `[LINK: url | ]` 标记**，使其不被当作普通文字遗漏
+
+遗漏纯文本 URL 是内容保全最常见的失职点。原因：纯文本 URL 不是 HTML 标签，不会被 `lake-extract.py` 的 `extract_links()` 捕获，也不会被 `verify-content.py` 的链接检测覆盖。唯一防线是 AI 在 Step 0 主动扫描。如果 Step 0 遗漏，后续所有质量门都会"正确地"放过——因为校验基准本身就错了。
+
 ### 1c. 验证
 
 - [ ] 图片/链接/代码块/表格/附件/公式/流程图数量与 Step 0 规划表清点一致
+- [ ] 链接数量包含 `<a href>` 标签链接 + `<card name="yuque">` 嵌入链接 + 纯文本 URL 三类之和
 - [ ] 表格行列数完整
 - [ ] 内容顺序与原文一致
 - [ ] 无残留格式标记
@@ -238,7 +247,5 @@ python scripts/lake-converter.py input.html output.lake --title "文档标题"
 **执行层（AI 不读，脚本自动加载）**：
 - [scripts/lake-converter.py](scripts/lake-converter.py) — 伪标签转换脚本
 - [scripts/md-to-lake.py](scripts/md-to-lake.py) — Markdown 转伪标签 HTML 脚本
-- [scripts/lake-extract.py](scripts/lake-extract.py) — Lake 输入内容提取器（.lake → 位置标记纯文本，辅助 Step 1a-Lake）
-- [scripts/lake-generator.py](scripts/lake-generator.py) — .lakebook 打包脚本（多 .lake → 知识库导入包）
 - [scripts/verify-content.py](scripts/verify-content.py) — 内容保全校验脚本（比对输入输出中不可变元素数量）
 - [reference/tag-mapping.json](reference/tag-mapping.json) — 伪标签→Lake 语法映射表（由 lake-converter.py 加载，位于 reference/ 但属执行层）

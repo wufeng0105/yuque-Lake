@@ -75,6 +75,17 @@ def parse_lake(content):
     yuque_count = len(re.findall(r'<card\s+[^>]*name="yuque"[^>]*>', content, re.IGNORECASE))
     counts['links'] += yuque_count
 
+    # 纯文本 URL：正文中以 http:// 或 https:// 开头的文本
+    # 排除已在 <a href="..."> 标签内的 URL 文本（避免双重计数）
+    # 策略：先移除 <a>...</a> 整体（标签+内容），再移除其他 HTML 标签，然后扫描剩余文本
+    text_for_url_scan = re.sub(r'<a\s+[^>]*>.*?</a>', ' ', content, flags=re.DOTALL | re.IGNORECASE)
+    text_for_url_scan = re.sub(r'<[^>]+>', ' ', text_for_url_scan)
+    # 移除 HTML 实体
+    text_for_url_scan = text_for_url_scan.replace('&amp;', '&').replace('&lt;', '<').replace('&gt;', '>').replace('&quot;', '"').replace('&#39;', "'")
+    # 统计纯文本 URL（长度 > 10 避免匹配短碎片）
+    text_urls = re.findall(r'(https?://[^\s<>"\']{10,})', text_for_url_scan)
+    counts['links'] += len(text_urls)
+
     return counts
 
 

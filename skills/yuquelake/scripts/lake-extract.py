@@ -207,6 +207,23 @@ def extract_links(content):
     return re.sub(pattern, repl, content, flags=re.DOTALL | re.IGNORECASE)
 
 
+def extract_text_urls(content):
+    """扫描正文中以 http:// 或 https:// 开头的纯文本 URL，标记为 [LINK: url | ]"""
+    # 保护已有的位置标记，不在标记内扫描 URL
+    # 按 [MARKER: ...] 分割内容，只在非标记部分扫描
+    marker_pattern = r'(\[[A-Z_]+:[^\]]*\])'
+    parts = re.split(marker_pattern, content)
+    result = []
+    for part in parts:
+        if re.match(r'\[[A-Z_]+:', part):
+            result.append(part)  # 标记内不处理
+        else:
+            url_pattern = r'(https?://[^\s<>"\'\]\)]+)'
+            part = re.sub(url_pattern, lambda m: f'[LINK: {m.group(1)} | ]', part)
+            result.append(part)
+    return ''.join(result)
+
+
 def strip_html_tags(content):
     """剥离剩余 HTML 标签，保留文本和位置标记"""
     # 保留 [IMAGE:...], [CODE:...] 等位置标记（方括号内的内容）
@@ -223,6 +240,8 @@ def strip_html_tags(content):
     content = re.sub(r'<[^>]+>', '', content)
     # 清理 HTML 实体
     content = content.replace('&amp;', '&').replace('&lt;', '<').replace('&gt;', '>').replace('&quot;', '"').replace('&#39;', "'")
+    # 扫描纯文本 URL 并标记为 [LINK: ...]
+    content = extract_text_urls(content)
     # 收敛空白
     content = re.sub(r'\n{3,}', '\n\n', content)
     return content.strip()

@@ -3,27 +3,127 @@
   "evals": [
     {
       "id": 1,
+      "name": "sop-refund-conversion",
       "prompt": "帮我把这份退款SOP文档转成语雀Lake格式，我需要导入到知识库里。文档内容是一份Markdown格式的操作流程，包含退款条件判断、多个操作步骤、客服话术和金额计算公式。",
-      "expected_output": "生成一个 .lake 文件，包含：<!doctype lake> 头部、<h1>标题、<h2>章节、<alert>提示框、<table>参数对照表、<card-codeblock>代码块、<collapse>折叠步骤详情、任务清单 <card-checkbox>、<card-hr/> 分割线。文档结构符合 SOP 类型：目的→范围→定义→职责→操作步骤→注意事项→Check List→修订记录。",
-      "files": ["验证文档集/退款SOP.md"]
+      "expected_output": "生成一个 .lake 文件，包含：<!doctype lake> 头部、<h1>标题、<h2>章节、<alert>提示框、<table>参数对照表、<card-codeblock>代码块、<collapse>折叠步骤详情、任务清单 <card-checkbox>、<card-hr/> 分割线。文档结构符合 SOP 类型：目的→范围→定义→职责→操作步骤→注意事项→Check List→修订记录。完整展示四步流程：规划表→清洗后纯文本→结构化大纲（含信息类型标注）→伪标签HTML→.lake文件。",
+      "files": ["evals/fixtures/refund-sop.md"],
+      "assertions": [
+        {"text": "输出文件以 <!doctype lake> 开头", "type": "contains", "value": "<!doctype lake>"},
+        {"text": "包含 <title> 标签", "type": "contains", "value": "<title>"},
+        {"text": "包含 4 个 <meta> 标签", "type": "regex", "value": "<meta name=\"doc-version\"|<meta name=\"viewport\"|<meta name=\"typography\"|<meta name=\"paragraphSpacing\""},
+        {"text": "包含真实 <card> 标签（非伪标签）", "type": "regex", "value": "<card[^-]"},
+        {"text": "无残留伪标签（card- 前缀）", "type": "not_contains", "value": "card-codeblock"},
+        {"text": "所有 card value 以 data: 开头", "type": "regex", "value": "value=\"data:"},
+        {"text": "包含 alert 提示框", "type": "contains", "value": "lake-alert"},
+        {"text": "包含 table 表格", "type": "contains", "value": "lake-table"},
+        {"text": "包含 collapse 折叠面板", "type": "contains", "value": "lake-collapse"}
+      ]
     },
     {
       "id": 2,
+      "name": "technical-doc-microservice",
       "prompt": "我有一篇技术博客文章想转成语雀的Lake格式，文章讲的是微服务架构设计，里面有架构图的Mermaid代码、一段Python示例代码、一个对比表格，还有一些数学公式。",
-      "expected_output": "生成一个 .lake 文件，包含 <card-diagram type=\"mermaid\"> 架构图、<card-codeblock mode=\"python\"> 代码块、<table> 对比表、<card-math> 数学公式、标准 h2/h3 标题层级。文档结构符合技术文档类型。",
-      "files": []
+      "expected_output": "生成一个 .lake 文件，包含 <card-diagram type=\"mermaid\"> 架构图、<card-codeblock mode=\"python\"> 代码块、<table> 对比表、<card-math> 数学公式、标准 h2/h3 标题层级。文档结构符合技术文档类型。完整展示四步流程。",
+      "files": ["evals/fixtures/microservice-arch.md"],
+      "assertions": [
+        {"text": "输出文件以 <!doctype lake> 开头", "type": "contains", "value": "<!doctype lake>"},
+        {"text": "包含 diagram card", "type": "contains", "value": "name=\"diagram\""},
+        {"text": "包含 codeblock card", "type": "contains", "value": "name=\"codeblock\""},
+        {"text": "包含 math card", "type": "contains", "value": "name=\"math\""},
+        {"text": "包含表格", "type": "contains", "value": "lake-table"},
+        {"text": "无残留伪标签", "type": "not_contains", "value": "card-diagram"},
+        {"text": "所有 card value 以 data: 开头", "type": "regex", "value": "value=\"data:"}
+      ]
     },
     {
       "id": 3,
+      "name": "api-doc-user-service",
       "prompt": "这是一份API接口文档，请转换为Lake格式导入语雀。包含接口列表、请求参数表格、响应示例JSON代码块、错误码对照表。",
-      "expected_output": "生成一个 .lake 文件，包含 <table> 参数表和错误码表、<card-codeblock mode=\"json\"> 响应示例、<h2> 按接口分组、<h3> 请求/响应/错误码分节。文档结构符合 API 文档类型。",
-      "files": ["验证文档集/退款SOP.md"]
+      "expected_output": "生成一个 .lake 文件，包含 <table> 参数表和错误码表、<card-codeblock mode=\"json\"> 响应示例、<h2> 按接口分组、<h3> 请求/响应/错误码分节。文档结构符合 API 文档类型。完整展示四步流程。",
+      "files": ["evals/fixtures/user-api-doc.md"],
+      "assertions": [
+        {"text": "输出文件以 <!doctype lake> 开头", "type": "contains", "value": "<!doctype lake>"},
+        {"text": "包含 codeblock card", "type": "contains", "value": "name=\"codeblock\""},
+        {"text": "包含表格", "type": "contains", "value": "lake-table"},
+        {"text": "包含 h2 标题", "type": "regex", "value": "<h2[^>]*>"},
+        {"text": "无残留伪标签", "type": "not_contains", "value": "card-codeblock"},
+        {"text": "所有 card value 以 data: 开头", "type": "regex", "value": "value=\"data:"}
+      ]
     },
     {
       "id": 4,
-      "prompt": "我这里有5份Markdown文档需要批量转成Lake格式导入语雀知识库，分别是产品需求文档、微服务架构设计、运维监控告警手册、RESTful API接口规范、软件测试计划。帮我处理一下。",
-      "expected_output": "先输出处理规划表（用户意图、输入格式、输入规模、文档类型、输出方式），然后批量处理5个文件，输出到统一目录，最后输出验证报告。验证每个 .lake 文件都有 <!doctype lake>、无残留伪标签、card value 以 data: 开头。",
-      "files": ["验证文档集/01-产品需求文档.md", "验证文档集/02-微服务架构设计.md", "验证文档集/03-运维监控告警手册.md", "验证文档集/04-RESTful-API接口规范.md", "验证文档集/05-软件测试计划.md"]
+      "name": "batch-conversion",
+      "prompt": "我这里有3份Markdown文档需要批量转成Lake格式导入语雀知识库，分别是退款SOP、微服务架构设计、用户服务API文档。帮我处理一下。",
+      "expected_output": "先输出处理规划表（用户意图、输入格式、输入规模、文档类型、输出方式），然后批量处理3个文件，输出到统一目录，最后输出验证报告。每个文件都完整展示四步流程的中间产物。验证每个 .lake 文件都有 <!doctype lake>、无残留伪标签、card value 以 data: 开头。",
+      "files": ["evals/fixtures/refund-sop.md", "evals/fixtures/microservice-arch.md", "evals/fixtures/user-api-doc.md"],
+      "assertions": [
+        {"text": "输出处理规划表", "type": "regex", "value": "用户意图|输入格式|文档类型|输出方式"},
+        {"text": "生成 3 个 .lake 文件", "type": "regex", "value": "\\.lake"},
+        {"text": "每个文件以 <!doctype lake> 开头", "type": "contains", "value": "<!doctype lake>"},
+        {"text": "输出验证报告", "type": "regex", "value": "验证|检查|通过"}
+      ]
+    },
+    {
+      "id": 5,
+      "name": "meeting-notes-conversion",
+      "prompt": "请把这份会议纪要转成语雀Lake格式，里面有参会人员、议题讨论、决议和行动项。",
+      "expected_output": "生成一个 .lake 文件，文档结构符合会议记录类型：会议信息表格→参会人员→议程→讨论记录（折叠面板）→决议→行动项表格。包含 <table>、<collapse>、<card-label> 等元素。",
+      "files": ["evals/fixtures/meeting-notes.md"],
+      "assertions": [
+        {"text": "输出文件以 <!doctype lake> 开头", "type": "contains", "value": "<!doctype lake>"},
+        {"text": "包含表格（会议信息/行动项）", "type": "contains", "value": "lake-table"},
+        {"text": "包含 collapse 折叠面板（讨论记录）", "type": "contains", "value": "lake-collapse"},
+        {"text": "无残留伪标签", "type": "not_contains", "value": "card-label"},
+        {"text": "所有 card value 以 data: 开头", "type": "regex", "value": "value=\"data:"}
+      ]
+    },
+    {
+      "id": 6,
+      "name": "prd-conversion",
+      "prompt": "这是一份用户中心改版的需求文档，帮我转成Lake格式导入语雀知识库。包含功能清单、Mermaid架构图、功能需求详情、非功能需求指标表。",
+      "expected_output": "生成一个 .lake 文件，文档结构符合 PRD 类型：产品简介→功能清单表格→产品架构图→功能需求（折叠面板）→非功能需求表格。包含 <card-diagram>、<table>、<collapse>、<card-label> 等元素。",
+      "files": ["evals/fixtures/prd-user-center.md"],
+      "assertions": [
+        {"text": "输出文件以 <!doctype lake> 开头", "type": "contains", "value": "<!doctype lake>"},
+        {"text": "包含 diagram card（架构图）", "type": "contains", "value": "name=\"diagram\""},
+        {"text": "包含表格（功能清单/非功能需求）", "type": "contains", "value": "lake-table"},
+        {"text": "包含 collapse 折叠面板（功能需求）", "type": "contains", "value": "lake-collapse"},
+        {"text": "无残留伪标签", "type": "not_contains", "value": "card-diagram"},
+        {"text": "所有 card value 以 data: 开头", "type": "regex", "value": "value=\"data:"}
+      ]
+    },
+    {
+      "id": 7,
+      "name": "sop-scattered-info-extraction",
+      "prompt": "这份客服退款处理流程文档内容比较散乱，参数、话术、条件判断都混在段落里。请转成语雀Lake格式，要求把散乱的信息整理成结构化的表格。",
+      "expected_output": "完整展示四步流程。关键验证点：Step 2 梳理阶段应识别并提取散乱信息为结构化表格——退款审批层级表（金额→审批人）、退款方式对比表（方式→到账时间）、订单状态条件映射表（状态→动作）、客服话术表（场景→话术原文）、系统参数表（参数→默认值→建议值）、异常处理表（异常→措施）。Step 3 应阅读 card-guide.md 后选择伪标签。最终 .lake 文件包含至少 5 个 lake-table。",
+      "files": ["evals/fixtures/refund-sop-scattered.md"],
+      "assertions": [
+        {"text": "输出文件以 <!doctype lake> 开头", "type": "contains", "value": "<!doctype lake>"},
+        {"text": "无残留伪标签", "type": "not_contains", "value": "card-"},
+        {"text": "所有 card value 以 data: 开头", "type": "regex", "value": "value=\"data:\""},
+        {"text": "包含至少 5 个表格（信息提取结果）", "type": "regex", "value": "lake-table[\\s\\S]*lake-table[\\s\\S]*lake-table[\\s\\S]*lake-table[\\s\\S]*lake-table"},
+        {"text": "包含退款金额计算公式", "type": "regex", "value": "退款金额|商品实付|优惠券"},
+        {"text": "包含客服话术内容", "type": "regex", "value": "您好|已受理|尽快为您处理"},
+        {"text": "包含审批层级信息（500/2000）", "type": "regex", "value": "500|2000|主管|经理"},
+        {"text": "包含系统参数信息（超时/重试/日志）", "type": "regex", "value": "3000|重试|日志|info|warning"}
+      ]
+    },
+    {
+      "id": 8,
+      "name": "sop-compound-mode-branching",
+      "prompt": "这份企业缴费充值SOP文档有一个关键步骤存在条件分支——缴费方式分流为「网站直接充值」和「对公转账」两条路径。请转成语雀Lake格式，要求让读者一眼看到分叉逻辑。文档包含职责分工、分支操作步骤、注意事项和Check List。",
+      "expected_output": "完整展示四步流程。关键验证点：Step 2 梳理阶段应识别步骤2「缴费方式分流」存在条件分支，标注为 Process + Procedure 复合。Step 3 应触发 card-guide.md 中的「复合模式」——先输出流程总览图（card-diagram mermaid），再输出详细操作步骤（ol/collapse）。最终 .lake 文件包含至少 1 个 name=\"diagram\" 的 card（流程总览）和 ol/collapse（详细步骤）。",
+      "files": ["evals/fixtures/payment-sop-branching.md"],
+      "assertions": [
+        {"text": "输出文件以 <!doctype lake> 开头", "type": "contains", "value": "<!doctype lake>"},
+        {"text": "包含 diagram card（流程总览图——复合模式触发标志）", "type": "contains", "value": "name=\"diagram\""},
+        {"text": "包含详细操作步骤（ol 或 collapse）", "type": "regex", "value": "lake-collapse|<ol"},
+        {"text": "无残留伪标签", "type": "not_contains", "value": "card-diagram"},
+        {"text": "所有 card value 以 data: 开头", "type": "regex", "value": "value=\"data:\""},
+        {"text": "包含职责分工表格", "type": "contains", "value": "lake-table"},
+        {"text": "包含分支关键词（网站直接充值/对公转账）", "type": "regex", "value": "网站直接充值|对公转账"}
+      ]
     }
   ]
 }

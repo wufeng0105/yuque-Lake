@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
 """
-Lake 伪标签转换器 v4.1
+Lake 伪标签转换器 v4.2
 
 基于真实 .lake 样本验证的语法映射，支持：
 - 13 种 Card 伪标签（codeblock, image, math, hr, diagram, checkbox, label, file, date, calendar, datatable, board, yuque）
 - 4 种非 Card 伪标签（alert, collapse, columns, inline-label）
 - 文档头部自动生成（<!doctype lake> + <title> + 4 个 <meta>）
 - ID 自动生成（5字符随机）
+- tag-mapping.json 加载与同步验证（Card 元数据的唯一真实来源）
+
+v4.2 改进：
+- 新增: 加载 tag-mapping.json，启动时验证 Python Card 定义与 JSON 配置同步
+- 修复: alert/collapse 嵌套处理用负向先行断言匹配最内层，替代 finditer+skip 方案
 
 v4.1 修复：
 - Bug: 内容 Card 无属性时不匹配（<card-codeblock>code</card-codeblock>）
@@ -22,12 +27,33 @@ v4.1 修复：
 """
 
 import sys
+import os
 import re
 import json
 import random
 import string
 import argparse
-from urllib.parse import quote, urlencode
+from urllib.parse import quote
+
+
+# ========== 配置加载 ==========
+
+def _load_tag_mapping():
+    """加载 tag-mapping.json — Card 伪标签映射的唯一真实来源
+
+    JSON 定义 Card 的元数据（cardName, cardType, selfClosing, attributes），
+    Python 负责 JSON 模板无法覆盖的复杂转换逻辑（URL 构建、MIME 推断等）。
+    _validate_card_sync() 确保两者保持同步。
+    """
+    json_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'reference', 'tag-mapping.json')
+    try:
+        with open(json_path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        print(f"警告: 未找到 tag-mapping.json ({json_path})，跳过配置同步检查", file=sys.stderr)
+        return {}
+
+TAG_MAPPING = _load_tag_mapping()
 
 
 def gen_id():
@@ -255,6 +281,57 @@ def _build_inline_label(attrs):
     return f'<span data-color="{color}" class="ne-label">{text}</span>'
 
 
+# ========== 配置同步验证 ==========
+
+def _validate_card_sync():
+    """验证 Python Card 定义与 tag-mapping.json 保持同步
+
+    检查方向：
+    1. JSON 中每个 card 在 Python 中有对应实现
+    2. cardName 和 cardType 一致
+    3. Python 中每个 card 在 JSON 中有对应定义
+    """
+    if not TAG_MAPPING:
+        return
+    json_cards = TAG_MAPPING.get('cards', {})
+    json_pseudo_tags = {c.get('pseudoTag', '') for c in json_cards.values()}
+
+    # JSON → Python
+    for key, card_def in json_cards.items():
+        pseudo_tag = card_def.get('pseudoTag', '')
+        short_name = pseudo_tag.replace('card-', '') if pseudo_tag else key
+        is_self_closing = card_def.get('selfClosing', False)
+        json_name = card_def.get('cardName', '')
+        json_type = card_def.get('cardType', '')
+
+        if is_self_closing:
+            py_def = SELF_CLOSING_CARDS.get(short_name)
+        else:
+            py_def = CONTENT_CARDS.get(short_name)
+
+        if py_def is None:
+            print(f"警告: tag-mapping.json 定义了 {pseudo_tag}，但脚本未实现", file=sys.stderr)
+        else:
+            if py_def['card_name'] != json_name:
+                print(f"警告: {pseudo_tag} cardName 不一致 (JSON: {json_name}, Python: {py_def['card_name']})", file=sys.stderr)
+            if py_def['card_type'] != json_type:
+                print(f"警告: {pseudo_tag} cardType 不一致 (JSON: {json_type}, Python: {py_def['card_type']})", file=sys.stderr)
+
+    # Python → JSON
+    for name in SELF_CLOSING_CARDS:
+        pseudo = f"card-{name}"
+        if pseudo not in json_pseudo_tags:
+            print(f"警告: 脚本实现了 <{pseudo}>，但 tag-mapping.json 未定义", file=sys.stderr)
+
+    for name in CONTENT_CARDS:
+        pseudo = f"card-{name}"
+        if pseudo not in json_pseudo_tags:
+            print(f"警告: 脚本实现了 <{pseudo}>，但 tag-mapping.json 未定义", file=sys.stderr)
+
+
+_validate_card_sync()
+
+
 # ========== 属性解析 ==========
 
 def parse_attrs(attr_str):
@@ -386,37 +463,28 @@ def convert_non_card_tags(html):
         return NON_CARD_TAGS['inline-label']['transform'](attrs, '')
     html = re.sub(pattern, repl_label, html)
 
-    # 处理 alert（带内容，多趟处理嵌套）
+    # 处理 alert（带内容，用负向先行断言匹配最内层，逐层处理嵌套）
     for _ in range(20):
-        pattern = r'<alert(\s+[^>]*?)?>(.*?)</alert>'
+        # (?:(?!<alert\s)[\s\S])*? 确保内容中不含嵌套 alert 开标签
+        pattern = r'<alert(\s+[^>]*?)?>((?:(?!<alert\s)[\s\S])*?)</alert>'
         match = re.search(pattern, html, flags=re.DOTALL)
         if not match:
             break
-        content = match.group(2) or ''
-        # 跳过嵌套 alert
-        if re.search(r'<alert(\s+[^>]*?)?>', content):
-            # 先处理内部的（下一轮会找到更内层的）
-            continue
         attrs = parse_attrs(match.group(1) or '')
+        content = match.group(2) or ''
         result = NON_CARD_TAGS['alert']['transform'](attrs, content)
         html = html[:match.start()] + result + html[match.end():]
 
-    # 处理 collapse（带内容，改进: 用 finditer + reversed，O(n) 效率）
+    # 处理 collapse（带内容，用负向先行断言匹配最内层，逐层处理嵌套）
     for _ in range(20):
-        pattern = r'<collapse(\s+[^>]*?)?>(.*?)</collapse>'
-        matches = list(re.finditer(pattern, html, flags=re.DOTALL))
-        converted = False
-        for m in reversed(matches):
-            content = m.group(2) or ''
-            # 跳过嵌套 collapse（先处理内层）
-            if re.search(r'<collapse(\s+[^>]*?)?>', content):
-                continue
-            attrs = parse_attrs(m.group(1) or '')
-            result = NON_CARD_TAGS['collapse']['transform'](attrs, content)
-            html = html[:m.start()] + result + html[m.end():]
-            converted = True
-        if not converted:
+        pattern = r'<collapse(\s+[^>]*?)?>((?:(?!<collapse\s)[\s\S])*?)</collapse>'
+        match = re.search(pattern, html, flags=re.DOTALL)
+        if not match:
             break
+        attrs = parse_attrs(match.group(1) or '')
+        content = match.group(2) or ''
+        result = NON_CARD_TAGS['collapse']['transform'](attrs, content)
+        html = html[:match.start()] + result + html[match.end():]
 
     # 处理 columns（带 column 子标签）
     pattern = r'<columns>(.*?)</columns>'
@@ -455,7 +523,14 @@ def add_document_header(html, title):
 
 
 def convert(html, title=None):
-    """完整转换流程"""
+    """完整转换流程
+
+    待实现功能（tag-mapping.json standardHtmlTags 中定义但尚未实现）：
+    - data-lake-id 自动生成：为每个 HTML 元素（h1-h6, p, td, li 等）添加 data-lake-id 和 id 属性
+    - <span> 文本包裹：将所有文本节点用 <span data-lake-id id> 包裹
+    - 列表拆分：每个 <li> 独立到各自的 <ul>/<ol>，通过 list 属性关联
+    这些功能在语雀编辑器导入时会自动补全，当前版本不阻塞导入。
+    """
     # 1. 转换自闭合 Card（含 CONTENT_CARDS 的自闭合形式）
     html = convert_self_closing_cards(html)
     # 2. 转换带内容 Card（多趟）
@@ -468,18 +543,25 @@ def convert(html, title=None):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Lake 伪标签转换器 v4.1')
+    parser = argparse.ArgumentParser(description='Lake 伪标签转换器 v4.2')
     parser.add_argument('input', help='输入 HTML 文件路径')
     parser.add_argument('output', nargs='?', help='输出 .lake 文件路径（不指定则输出到 stdout）')
     parser.add_argument('--title', default=None, help='文档标题')
 
     args = parser.parse_args()
 
-    if args.input == '-':
-        html = sys.stdin.read()
-    else:
-        with open(args.input, 'r', encoding='utf-8') as f:
-            html = f.read()
+    try:
+        if args.input == '-':
+            html = sys.stdin.read()
+        else:
+            with open(args.input, 'r', encoding='utf-8') as f:
+                html = f.read()
+    except FileNotFoundError:
+        print(f"错误: 输入文件不存在: {args.input}", file=sys.stderr)
+        sys.exit(1)
+    except PermissionError:
+        print(f"错误: 无权限读取文件: {args.input}", file=sys.stderr)
+        sys.exit(1)
 
     result = convert(html, args.title)
 
@@ -490,9 +572,13 @@ def main():
         print(f"警告: {len(remaining)} 个未转换伪标签: {unique}", file=sys.stderr)
 
     if args.output:
-        with open(args.output, 'w', encoding='utf-8') as f:
-            f.write(result)
-        print(f"转换完成: {args.output}", file=sys.stderr)
+        try:
+            with open(args.output, 'w', encoding='utf-8') as f:
+                f.write(result)
+            print(f"转换完成: {args.output}", file=sys.stderr)
+        except PermissionError:
+            print(f"错误: 无权限写入文件: {args.output}", file=sys.stderr)
+            sys.exit(1)
     else:
         print(result)
 

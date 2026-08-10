@@ -5,8 +5,9 @@
   "$notes": [
     "所有 JSON 对象中的 id 字段由脚本自动生成（5字符随机字符串）",
     "所有 URL 编码使用 encodeURIComponent",
-    "data-lake-id 和 id 属性由脚本自动为每个元素生成",
-    "所有文本由脚本自动用 <span data-lake-id id> 包裹"
+    "data-lake-id 和 id 属性自动生成（待实现，语雀编辑器导入时自动补全）",
+    "所有文本自动用 <span data-lake-id id> 包裹（待实现，语雀编辑器导入时自动补全）",
+    "列表拆分：每个 <li> 独立到各自 <ul>/<ol>（待实现，语雀编辑器导入时自动补全）"
   ],
 
   "documentHeader": {
@@ -173,6 +174,7 @@
       "pseudoTag": "card-label",
       "cardType": "inline",
       "cardName": "label",
+      "selfClosing": true,
       "attributes": {
         "text": { "required": true, "type": "string", "description": "标签文本" },
         "color": { "required": true, "type": "integer", "description": "颜色索引数字（0-5+）" }

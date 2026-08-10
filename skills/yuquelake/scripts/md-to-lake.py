@@ -2,10 +2,12 @@
 """
 Markdown → Lake 伪标签 HTML 转换器
 
-自动处理 SKILL.md 四步流程的前三步（清洗→梳理→伪代码）：
-- 步骤 1：剥离 Markdown 格式标记
-- 步骤 2：保持原文档结构（不做重组）
-- 步骤 3：转换为伪标签 HTML
+处理 SKILL.md 四步流程中的格式转换部分：
+- 步骤 1（清洗）：剥离 Markdown 格式标记，保留纯文本 + 位置信息
+- 步骤 3（伪代码）：将 Markdown 结构转换为伪标签 HTML
+
+注意：步骤 2（按文档类型重新梳理内容结构）是 AI 的职责，不是本脚本的功能。
+本脚本不做内容重组，只做格式转换。
 
 用法：
     python md-to-lake.py input.md output.html
@@ -264,15 +266,26 @@ def main():
     
     args = parser.parse_args()
     
-    with open(args.input, 'r', encoding='utf-8') as f:
-        md_text = f.read()
+    try:
+        with open(args.input, 'r', encoding='utf-8') as f:
+            md_text = f.read()
+    except FileNotFoundError:
+        print(f"错误: 输入文件不存在: {args.input}", file=sys.stderr)
+        sys.exit(1)
+    except PermissionError:
+        print(f"错误: 无权限读取文件: {args.input}", file=sys.stderr)
+        sys.exit(1)
     
     html = convert_markdown(md_text)
     
     if args.output:
-        with open(args.output, 'w', encoding='utf-8') as f:
-            f.write(html)
-        print(f"转换完成: {args.output}", file=sys.stderr)
+        try:
+            with open(args.output, 'w', encoding='utf-8') as f:
+                f.write(html)
+            print(f"转换完成: {args.output}", file=sys.stderr)
+        except PermissionError:
+            print(f"错误: 无权限写入文件: {args.output}", file=sys.stderr)
+            sys.exit(1)
     else:
         print(html)
 

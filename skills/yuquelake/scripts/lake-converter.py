@@ -537,7 +537,9 @@ def convert(html, title=None):
     html = convert_content_cards(html)
     # 3. 转换非 Card 结构
     html = convert_non_card_tags(html)
-    # 4. 添加文档头部
+    # 4. 为 <table> 补全 class="lake-table"（如果没有的话）
+    html = re.sub(r'<table(?![^>]*class=)([^>]*)>', r'<table\1 class="lake-table">', html)
+    # 5. 添加文档头部
     html = add_document_header(html, title)
     return html
 

@@ -99,6 +99,8 @@ Lake `<card>` 标签结构：`<card type="inline" name="cardName" value="data:UR
 
 这个过程确保 Lake 格式输入中的所有内容载体被正确解析为位置标记，不会在后续清洗中被当作普通 HTML 标签剥离。
 
+**辅助工具**：`python scripts/lake-extract.py input.lake output.txt` — 自动化上述解码和提取过程，输出位置标记纯文本。
+
 ### 1b. 保留（内容 + 位置标记）
 
 | 保留类型 | 标记格式 |
@@ -236,5 +238,7 @@ python scripts/lake-converter.py input.html output.lake --title "文档标题"
 **执行层（AI 不读，脚本自动加载）**：
 - [scripts/lake-converter.py](scripts/lake-converter.py) — 伪标签转换脚本
 - [scripts/md-to-lake.py](scripts/md-to-lake.py) — Markdown 转伪标签 HTML 脚本
+- [scripts/lake-extract.py](scripts/lake-extract.py) — Lake 输入内容提取器（.lake → 位置标记纯文本，辅助 Step 1a-Lake）
+- [scripts/lake-generator.py](scripts/lake-generator.py) — .lakebook 打包脚本（多 .lake → 知识库导入包）
 - [scripts/verify-content.py](scripts/verify-content.py) — 内容保全校验脚本（比对输入输出中不可变元素数量）
 - [reference/tag-mapping.json](reference/tag-mapping.json) — 伪标签→Lake 语法映射表（由 lake-converter.py 加载，位于 reference/ 但属执行层）

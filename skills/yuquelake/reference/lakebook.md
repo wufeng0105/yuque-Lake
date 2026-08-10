@@ -114,18 +114,16 @@ knowledge-base.lakebook (tar archive)
 
 ## 程序化生成 lakebook
 
-> **注意**：`lake-generator.py` 尚未实现。以下为手动打包方案。
-
 ```bash
-# 手动打包：先用 lake-converter.py 逐个生成 .lake 文件，再用 tar 打包
+# 1. 逐个生成 .lake 文件
 python scripts/lake-converter.py doc1.html doc1.lake --title "文档1"
 python scripts/lake-converter.py doc2.html doc2.lake --title "文档2"
 
-# 打包为 .lakebook（本质是 tar 归档，非压缩）
-tar cf 知识库.lakebook manifest.json doc1.lake doc2.lake
+# 2. 打包为 .lakebook
+python scripts/lake-generator.py -o 知识库.lakebook doc1.lake doc2.lake --title "知识库名"
 ```
 
-`manifest.json` 结构见上方「元数据」章节。
+`lake-generator.py` 自动生成 `$meta.json`（含 TOC YAML）和文档条目 JSON，打包为 tar 归档。
 
 ## 导入方式
 

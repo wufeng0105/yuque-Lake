@@ -6,6 +6,19 @@ Markdown → Lake 伪标签 HTML 转换器
 - 步骤 1（清洗）：剥离 Markdown 格式标记，保留纯文本 + 位置信息
 - 步骤 3（伪代码）：将 Markdown 结构转换为伪标签 HTML
 
+支持的 Markdown 特性：
+- 标题（h1-h6）、段落、加粗、斜体、行内代码、删除线
+- 代码块（```lang ... ```）→ <card-codeblock>
+- 图表（```mermaid/puml/plantuml ... ```）→ <card-diagram>
+- 图片（![alt](url)）→ <card-image>
+- 链接（[text](url)）→ <a>
+- 表格（| ... |）→ <table>
+- 无序列表、有序列表
+- 任务清单（- [ ] / - [x]）→ <ul class="lake-list"> + <card-checkbox>
+- 引用块（> text）→ <alert> 或 <blockquote>
+- 数学公式（$$...$$ / $...$）→ <card-math>
+- 水平分割线（---）→ <card-hr/>
+
 注意：步骤 2（按文档类型重新梳理内容结构）是 AI 的职责，不是本脚本的功能。
 本脚本不做内容重组，只做格式转换。
 
@@ -27,6 +40,10 @@ def escape_html(text):
     return text
 
 
+# 支持图表的代码块语言
+DIAGRAM_LANGS = {'mermaid': 'mermaid', 'puml': 'puml', 'plantuml': 'puml'}
+
+
 def strip_font_tags(text):
     """剥离 <font> 标签，保留内容"""
     text = re.sub(r'<font[^>]*>', '', text)
@@ -39,6 +56,14 @@ def convert_inline(text):
     # 先剥离 font 标签
     text = strip_font_tags(text)
     
+    # 块级数学公式 $$...$$
+    text = re.sub(r'\$\$(.+?)\$\$',
+                  lambda m: f'<card-math code="{escape_html(m.group(1).strip())}"/>', text, flags=re.DOTALL)
+
+    # 行内数学公式 $...$（不匹配 $$ 和已被处理的）
+    text = re.sub(r'(?<!\$)\$(?!\$)(.+?)(?<!\$)\$(?!\$)',
+                  lambda m: f'<card-math code="{escape_html(m.group(1).strip())}"/>', text)
+
     # 图片 ![alt](url)
     text = re.sub(r'!\[([^\]]*)\]\(([^)]+)\)', 
                   lambda m: f'<card-image src="{m.group(2)}" name="{m.group(1)}"></card-image>', text)
@@ -124,7 +149,7 @@ def convert_markdown(md_text):
     while i < len(lines):
         line = lines[i]
         
-        # 代码块
+        # 代码块（含图表：mermaid/puml/plantuml）
         if line.strip().startswith('```'):
             lang = line.strip().lstrip('`').strip() or 'plain'
             code_lines = []
@@ -134,7 +159,12 @@ def convert_markdown(md_text):
                 i += 1
             i += 1  # skip closing ```
             code = '\n'.join(code_lines)
-            html_lines.append(f'<card-codeblock mode="{lang}">{escape_html(code)}</card-codeblock>\n')
+            # 图表语言 → card-diagram，普通代码 → card-codeblock
+            diagram_type = DIAGRAM_LANGS.get(lang.lower())
+            if diagram_type:
+                html_lines.append(f'<card-diagram type="{diagram_type}">{escape_html(code)}</card-diagram>\n')
+            else:
+                html_lines.append(f'<card-codeblock mode="{lang}">{escape_html(code)}</card-codeblock>\n')
             continue
         
         # 水平分割线
@@ -179,6 +209,35 @@ def convert_markdown(md_text):
                 html_lines.append(f'<alert type="info">{quote_text}</alert>\n')
             continue
         
+        # 任务清单（- [ ] 或 - [x]）
+        if re.match(r'^\s*[-*+]\s+\[[ xX]\]\s+', line):
+            list_items = []
+            base_indent = len(line) - len(line.lstrip())
+            while i < len(lines):
+                m = re.match(r'^(\s*)[-*+]\s+\[([ xX])\]\s+(.+)', lines[i])
+                if m:
+                    indent = len(m.group(1))
+                    level = (indent - base_indent) // 2
+                    checked = 'true' if m.group(2).lower() == 'x' else 'false'
+                    text = convert_inline(m.group(3).strip())
+                    list_items.append((level, checked, text))
+                    i += 1
+                elif lines[i].strip() == '':
+                    i += 1
+                    if i < len(lines) and re.match(r'^\s*[-*+]\s+\[[ xX]\]\s+', lines[i]):
+                        continue
+                    else:
+                        break
+                else:
+                    break
+
+            html_lines.append('<ul class="lake-list">\n')
+            for level, checked, text in list_items:
+                indent_attr = f' data-lake-indent="{level}"' if level > 0 else ''
+                html_lines.append(f'<li class="lake-list-node lake-list-task"{indent_attr}><card-checkbox checked="{checked}"/>{text}</li>\n')
+            html_lines.append('</ul>\n')
+            continue
+
         # 无序列表
         if re.match(r'^\s*[-*+]\s+', line):
             list_items = []

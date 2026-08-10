@@ -73,9 +73,14 @@ python skills/yuquelake/scripts/lake-converter.py input.html output.lake --title
 
 # Markdown 转伪标签 HTML
 python skills/yuquelake/scripts/md-to-lake.py input.md output.html
+
+# Lake 输入内容提取（辅助 Step 1a-Lake）
+python skills/yuquelake/scripts/lake-extract.py input.lake output.txt
+
+# 打包 .lakebook（多文件导入知识库）
+python skills/yuquelake/scripts/lake-generator.py -o kb.lakebook doc1.lake doc2.lake --title "知识库名"
 ```
 
 ## 已知问题
 
 - `data-lake-id` 自动生成、`<span>` 文本包裹、列表拆分功能在 tag-mapping.json 中声明但脚本未实现。语雀编辑器导入时自动补全，不阻塞导入
-- `lake-generator.py`（.lakebook 打包脚本）尚未实现

@@ -338,7 +338,7 @@
       "realTag": "blockquote",
       "cssClass": "lake-alert lake-alert-{type}",
       "attributes": {
-        "type": { "required": true, "type": "string", "enum": ["info", "warning", "color2"], "description": "提示框类型" }
+        "type": { "required": true, "type": "string", "enum": ["info", "warning", "color1", "color2"], "description": "提示框类型：info=蓝色信息, warning=黄色警告, color1=浅色背景, color2=绿色" }
       },
       "htmlTemplate": "<blockquote class=\"lake-alert lake-alert-{type}\">{content}</blockquote>",
       "examples": [
@@ -441,7 +441,7 @@
       "requiredChildren": ["colgroup", "tbody"],
       "forbiddenChildren": ["thead"],
       "cellContentWrapping": "p",
-      "supportedCellStyles": ["background-color", "colSpan"]
+      "supportedCellStyles": ["background-color", "colSpan", "rowSpan", "vertical-align", "text-align"]
     },
     "list": {
       "tags": ["ul", "ol"],

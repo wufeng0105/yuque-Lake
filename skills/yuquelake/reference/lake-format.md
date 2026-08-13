@@ -245,7 +245,17 @@ Lake 支持 H1 ~ H6：
 
 ```html
 <td colSpan="3">合并三列</td>
+<td rowSpan="2">合并两行</td>
 ```
+
+#### 单元格垂直对齐
+
+```html
+<td style="vertical-align: middle">垂直居中</td>
+<td style="vertical-align: top">顶部对齐</td>
+```
+
+常见场景：某些行有多行内容时，使用 `vertical-align: middle` 让标签列垂直居中。
 
 #### 表格宽度模式
 
@@ -257,6 +267,17 @@ Lake 支持 H1 ~ H6：
 - `margin="true"` — 表格边距
 
 ## 5. Card 标签系统
+
+### 数据表（dataTable）与普通表格的区别
+
+语雀中有两种表格：
+
+| 类型 | HTML 结构 | 特点 |
+|------|----------|------|
+| 普通表格 | `<table class="lake-table">` | 静态内容，AI 可从零创建 |
+| 数据表 | `<table class="ne-dataTable">` 或 `<card name="dataTable">` | 含服务端数据（sheetId/docId/tableId），无法从零创建 |
+
+数据表在 HTML 中使用 `<thead>` + `<tbody>` 结构（与普通表格不同），第一行为表头。`lake-extract.py` 会自动识别并提取数据表内容。
 
 ### 基本结构
 

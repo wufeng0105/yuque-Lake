@@ -49,7 +49,7 @@
 ### 标记与提示类
 
 **`<alert>`** — 提示框
-适合：突出提示信息、警告、重要说明。有 info/warning/color2 三种样式。
+适合：突出提示信息、警告、重要说明。有 info/warning/color1/color2 四种样式。
 不适合：普通引用（用标准 `<blockquote>`）。
 
 **`<card-label>`** — 标签/徽章

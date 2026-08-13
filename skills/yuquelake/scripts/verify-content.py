@@ -31,9 +31,9 @@ from urllib.parse import unquote
 
 # ========== 输入文件解析 ==========
 
-def parse_lake(content):
-    """解析 .lake 文件，统计不可变元素"""
-    counts = {
+def _zero_counts():
+    """返回全零计数字典"""
+    return {
         'images': 0,
         'links': 0,
         'code_blocks': 0,
@@ -43,6 +43,17 @@ def parse_lake(content):
         'files': 0,
         'quotes': 0,
     }
+
+
+def count_lake_cards(content):
+    """统计 Lake 特有的 <card> 标签元素和纯文本 URL。
+
+    只计数 <card> 标签（image/codeblock/math/diagram/file/dataTable/board/yuque）
+    以及正文中不在 <a> 标签内的纯文本 URL。
+    不计数标准 HTML 标签（<table>/<a>/<blockquote> 等），避免与
+    parse_lake/parse_html 中的 HTML 标签计数重复。
+    """
+    counts = _zero_counts()
 
     # <card> 标签：name="xxx" value="data:..."
     card_pattern = re.compile(r'<card\s+[^>]*name="([^"]*)"[^>]*>', re.IGNORECASE)
@@ -58,18 +69,10 @@ def parse_lake(content):
             counts['diagrams'] += 1
         elif card_name == 'file':
             counts['files'] += 1
-
-    # <a href="..."> 链接
-    counts['links'] = len(re.findall(r'<a\s+[^>]*href="([^"]*)"[^>]*>', content, re.IGNORECASE))
-
-    # <table class="lake-table"> 表格
-    counts['tables'] = len(re.findall(r'<table[^>]*class="[^"]*lake-table[^"]*"[^>]*>', content, re.IGNORECASE))
-    # 也统计无 class 的 table（有些可能没有 lake-table class）
-    if counts['tables'] == 0:
-        counts['tables'] = len(re.findall(r'<table[^>]*>', content, re.IGNORECASE))
-
-    # <blockquote> 引用（包括 lake-alert）
-    counts['quotes'] = len(re.findall(r'<blockquote[^>]*>', content, re.IGNORECASE))
+        elif card_name == 'dataTable':
+            counts['tables'] += 1
+        elif card_name == 'board':
+            counts['diagrams'] += 1
 
     # 语雀文档嵌入 <card name="yuque"> 也算链接
     yuque_count = len(re.findall(r'<card\s+[^>]*name="yuque"[^>]*>', content, re.IGNORECASE))
@@ -89,18 +92,26 @@ def parse_lake(content):
     return counts
 
 
+def parse_lake(content):
+    """解析 .lake 文件，统计不可变元素"""
+    counts = _zero_counts()
+
+    # 标准 HTML 标签计数
+    counts['links'] += len(re.findall(r'<a\s+[^>]*href="([^"]*)"[^>]*>', content, re.IGNORECASE))
+    counts['tables'] += len(re.findall(r'<table[^>]*>', content, re.IGNORECASE))
+    counts['quotes'] += len(re.findall(r'<blockquote[^>]*>', content, re.IGNORECASE))
+
+    # Lake 特有元素（<card> 标签 + 纯文本 URL）
+    card_counts = count_lake_cards(content)
+    for key in counts:
+        counts[key] += card_counts[key]
+
+    return counts
+
+
 def parse_markdown(content):
     """解析 Markdown 文件，统计不可变元素"""
-    counts = {
-        'images': 0,
-        'links': 0,
-        'code_blocks': 0,
-        'tables': 0,
-        'math': 0,
-        'diagrams': 0,
-        'files': 0,
-        'quotes': 0,
-    }
+    counts = _zero_counts()
 
     # 图片: ![alt](url)
     counts['images'] = len(re.findall(r'!\[([^\]]*)\]\(([^)]+)\)', content))
@@ -162,34 +173,17 @@ def parse_markdown(content):
 
 def parse_html(content):
     """解析 HTML 文件，统计不可变元素"""
-    counts = {
-        'images': 0,
-        'links': 0,
-        'code_blocks': 0,
-        'tables': 0,
-        'math': 0,
-        'diagrams': 0,
-        'files': 0,
-        'quotes': 0,
-    }
+    counts = _zero_counts()
 
-    # <img src="...">
-    counts['images'] = len(re.findall(r'<img\s+[^>]*src="([^"]*)"[^>]*>', content, re.IGNORECASE))
+    # 标准 HTML 标签
+    counts['images'] += len(re.findall(r'<img\s+[^>]*src="([^"]*)"[^>]*>', content, re.IGNORECASE))
+    counts['links'] += len(re.findall(r'<a\s+[^>]*href="([^"]*)"[^>]*>', content, re.IGNORECASE))
+    counts['code_blocks'] += len(re.findall(r'<pre[^>]*>', content, re.IGNORECASE))
+    counts['tables'] += len(re.findall(r'<table[^>]*>', content, re.IGNORECASE))
+    counts['quotes'] += len(re.findall(r'<blockquote[^>]*>', content, re.IGNORECASE))
 
-    # <a href="...">
-    counts['links'] = len(re.findall(r'<a\s+[^>]*href="([^"]*)"[^>]*>', content, re.IGNORECASE))
-
-    # <pre><code> 或 <pre>
-    counts['code_blocks'] = len(re.findall(r'<pre[^>]*>', content, re.IGNORECASE))
-
-    # <table>
-    counts['tables'] = len(re.findall(r'<table[^>]*>', content, re.IGNORECASE))
-
-    # <blockquote>
-    counts['quotes'] = len(re.findall(r'<blockquote[^>]*>', content, re.IGNORECASE))
-
-    # <card> 标签（如果 HTML 中包含 Lake card）
-    card_counts = parse_lake(content)
+    # Lake 特有元素（<card> 标签 + 纯文本 URL，不重复计数 HTML 标签）
+    card_counts = count_lake_cards(content)
     for key in counts:
         counts[key] += card_counts[key]
 
@@ -198,16 +192,7 @@ def parse_html(content):
 
 def parse_text(content):
     """纯文本无法检测格式元素，返回全 0"""
-    return {
-        'images': 0,
-        'links': 0,
-        'code_blocks': 0,
-        'tables': 0,
-        'math': 0,
-        'diagrams': 0,
-        'files': 0,
-        'quotes': 0,
-    }
+    return _zero_counts()
 
 
 def parse_file(filepath):
